@@ -1,0 +1,80 @@
+# This .gitignore file is for Unity projects
+
+# Ignore generated project files
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+
+# Ignore auto-generated VS/MD/JetBrains Rider project files
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+*.pidb.meta
+
+# Ignore Build results
+*.apk
+*.aab
+*.exe
+*.app
+*.bak
+*.nib
+*.plst
+*.pid
+*.dll
+*.dylib
+*.iso
+*.cso
+*.pdb
+*.zip
+*.tar.gz
+*.rar
+
+# Ignore crash logs
+*.crash
+
+# Ignore IDE folders
+.idea/
+.vscode/
+
+# Ignore Python files
+__pycache__/
+*.py[cod]
+
+# Ignore other system files
+.DS_Store
+*.sublime*
+*.swp
+*.swo
+*.bak
+*.tmp
+*.TMP
+*~
+
+# Ignore files in StreamingAssets folder
+StreamingAssets/*
+
+# Ignore files with temporary extensions
+*.tmp
+*.temp
+*.TMP
+
+# Include Package Manager dependencies
+!Packages/manifest.json
+!Packages/packages-lock.json
+
+# Include Project Settings
+!ProjectSettings/

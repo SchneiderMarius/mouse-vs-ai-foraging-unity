@@ -1,0 +1,4 @@
+repository "SLAB_VR_gototarget@SLAB_JSC@cloud"
+  path "/"
+    br "/main"
+    co "/main"
