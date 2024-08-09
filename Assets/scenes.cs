@@ -55,7 +55,6 @@ public class scenes : MonoBehaviour
 
     void go() //proceeds to next scene when Go! is pressed (if log file and com ports are set)
     {
-
         phase = phaseselectfield.GetComponent<Dropdown>().value; 
         ballcom = ballcomfield.GetComponent<InputField>().text;
         rewardcom = rewardcomfield.GetComponent<InputField>().text;
@@ -78,7 +77,6 @@ public class scenes : MonoBehaviour
 
     void go_replay() //proceeds to replay scene when Replay! is pressed (if log file and other options are set)
     {
-
         //phase = phaseselectfield.GetComponent<Dropdown>().value;
         replay_type = replay_type_field.GetComponent<Dropdown>().value; //int encoded: 0 for normal, 1 for depth
         replay_load_dir = replay_load_directory_field.GetComponent<InputField>().text;
@@ -87,7 +85,6 @@ public class scenes : MonoBehaviour
         replay_save_dir = replay_save_dir.Substring(1, replay_save_dir.Length - 2);
 
         SceneManager.LoadScene("replay");
-
     }
 }
 

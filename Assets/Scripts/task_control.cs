@@ -942,6 +942,7 @@ public class task_control : MonoBehaviour
         GameObject[] decoys = GameObject.FindGameObjectsWithTag("decoys");
         foreach (GameObject decoy in decoys)
             GameObject.Destroy(decoy);
+            // Debug.Log("Found object: " + decoy.name);
     }
 
     void Restart()
