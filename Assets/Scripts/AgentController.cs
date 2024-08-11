@@ -33,10 +33,19 @@ public class AgentController : Agent
     private Quaternion mouse_start_rot;
     private float targetdistance;
     
+    private float trial_starttime; //container for start time of individual trials
+    public float timeout_time; //this is time when timeout will occur - update() slides this around
     public float timeout_duration = 5;
     public int reward_amt = 1;
     
+    public int trial_index = 0;
     int[] trial_history; //container for last few trial outcomes used for running performance calculation
+    public float difficulty_increment;
+    double difficulty_threshold = 0.7; //70% running performance required to increase target distance
+    public bool scale_difficulty;
+    public double running_performance;
+
+    public float offset_gain = 0.5f;
 
     
     [SerializeField] private GameObject target;
@@ -53,15 +62,27 @@ public class AgentController : Agent
         rb = GetComponent<Rigidbody>();
         
         m_ResetParams = Academy.Instance.EnvironmentParameters;
-
+        difficulty_increment = (float)scene.GetComponent<scenes>().difficulty_increment;
+        scale_difficulty = scene.GetComponent<scenes>().scale_difficulty;
+        targetdistance = (float)scene.GetComponent<scenes>().targetdistance;
+        
         timeout_duration = 5;
         reward_amt = 1;
         destroydecoys();
+        running_performance = 0;
         
+        //initialize starting mouse and target positions
+        Vector3 rot = transform.localRotation.eulerAngles;
+        rotY = rot.y;
+        rotX = rot.x;
+        
+        mouse_start_pos = transform.position; //start_pos variables store reset positions between trials - mouse starts at ~(0,0,0)
+        mouse_start_rot = transform.rotation;
+        target_start_pos = new Vector3(targetdistance, 0.5f, 0f); //starting target distance defined by user 
+
         // mousebody = mouse.GetComponent<Rigidbody>();
         // phase = scene.GetComponent<scenes>().phase;
         
-        // targetdistance = (float)scene.GetComponent<scenes>().targetdistance;
         //
         // trial_history = new int[15]; //used for automated difficulty increase in phases 1 and 2 - defaults to all zeros
         
@@ -87,15 +108,36 @@ public class AgentController : Agent
 
     public override void OnEpisodeBegin()
     {
-        //initialize starting mouse and target positions
-        Vector3 rot = transform.localRotation.eulerAngles;
-        rotY = rot.y;
-        rotX = rot.x;
+        // # TODO: take phase 2 into consideration
+        // trial_index++;
+        //
+        // //timeout timer math
+        // trial_starttime = Time.timeSinceLevelLoad;
+        // timeout_time = trial_starttime + timeout_duration; //this is time when timeout will occur - scaled realtime in update()
+        // // Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tn\t" + trial_index.ToString());
+        //
+        // //running performance and difficulty scaling
+        // running_performance = trial_history.Average(); //running performance is average across last n trials (set by trial_history length)
+        // if (running_performance >= difficulty_threshold && scale_difficulty) //distance scaling - increase distance to target if performance reaches threshold.
+        // {
+        //     target_start_pos.x += difficulty_increment;
+        //     Array.Clear(trial_history, 0, trial_history.Length); //clear array to only consider performance at current difficulty
+        // }
+        //
+        //reset mouse position
+        transform.position = mouse_start_pos;
+        transform.rotation = mouse_start_rot;
         
-        mouse_start_pos = mouse.transform.position; //start_pos variables store reset positions between trials - mouse starts at ~(0,0,0)
-        mouse_start_rot = mouse.transform.rotation;
-        target_start_pos = new Vector3(targetdistance, 0.5f, 0f); //starting target distance defined by user 
+        if (target != null)
+            target.transform.position = target_start_pos; //reset target position 
         
+        // if (phase == 2) //add offsets to target position if phase 2
+        // {
+        //     float poke = ((UnityEngine.Random.value * 2) - 1) * offset_gain * target_start_pos.x; // target moved L/R randomly up to gain value
+        //     Vector3 temp = target.transform.position; //need to use temporary object here for manual reassignment as transform.positon returns a struct, not a reference
+        //     temp.z += poke;
+        //     target.transform.position = temp;
+        // }
         
         // Agent
         // transform.localPosition = new Vector3(Random.Range(-4f, 4f), 0.3f, Random.Range(-4f, 4f));
@@ -144,6 +186,49 @@ public class AgentController : Agent
         
         // rb.MovePosition(transform.position + transform.forward * moveForward * moveSpeed * Time.deltaTime);
         // transform.Rotate(0f, moveRotate*moveSpeed, 0f, Space.Self);
+        
+        // # TODO: take timeout into consideration
+        // framenum += 1;
+        //
+        // //start blackout on user command
+        // if (start_blackout)
+        // {
+        //     blackout(blackout_duration);
+        //     start_blackout = false;
+        // }
+        //
+        // //calculate avg mouse speed (used for timeout management in phases 2+)
+        // mouse_speeds.Add(mouse.GetComponent<ballmove>().move.magnitude);
+        // mouse_speeds.RemoveAt(0);
+        // mouse_avg_speed = mouse_speeds.Average();
+        //
+        // //timeout and timeout scaling
+        // if (phase > 0)
+        // {
+        //     mouse_at_origin = Vector3.Distance(mouse.transform.position, new Vector3(0.0f, 0.5f, 0.0f)) < timeout_travel_threshold; //if mouse is stationary within certain distance of origin
+        //     Vector3 viewPos = cam.WorldToViewportPoint(target.transform.position);
+        //     target_in_fov = viewPos.x < 1 && viewPos.x > 0 && viewPos.y < 1 && viewPos.y > 0; //if target visible to mouse camera (checking if target renderer is active is sensitive to scene cam in unity editor)
+        //     float time_increment = Time.deltaTime * timeout_scaling_gain; //now timeout scaling gain is fraction of full time delay since last frame
+        //     if (phase < 3)
+        //     {
+        //         timeout_time += time_increment * 0.5f * ((mouse_at_origin ? 1 : 0) + (target_in_fov ? 1 : 0)); //adds more time to trial if mouse at origin and/or when target in FOV. 0.5 caps maximum time addition to full increment (stops time).
+        //     }
+        //     else
+        //     {
+        //         timeout_time += time_increment * 1f * (mouse_at_origin ? 1 : 0); //all other phase timeouts only depend on mouse at origin.
+        //     }
+        //
+        //     //timeout if timeout was reached
+        //     if (Time.timeSinceLevelLoad > timeout_time)
+        //     {
+        //         if (newtrial_requires_stop == false)
+        //             timeout();
+        //         else if (mouse_avg_speed < 0.1)
+        //             timeout();
+        //     }
+        // }
+        
+        // # TODO: reward and penalty
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)
@@ -177,7 +262,21 @@ public class AgentController : Agent
             GameObject.Destroy(decoy);
         // Debug.Log("Found object: " + decoy.name);
     }
+    void timeout()
+    {
+        // Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tf\t" + trial_index.ToString());
+        trialoutcome(0);
+        // if(phase > 0)
+        //     beep.Play();
+        EndEpisode();
+    }
     
+    void trialoutcome(int outcome)
+    {
+        Array.Copy(trial_history, 1, trial_history, 0, trial_history.Length - 1);
+        trial_history[trial_history.Length - 1] = outcome;
+        // trials.Add(outcome);
+    }
     // void win()
     // {
     //     // Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\th\t" + trial_index.ToString());
