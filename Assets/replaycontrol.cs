@@ -10,7 +10,6 @@ using UnityEngine.UI;
 
 public class replaycontrol : MonoBehaviour
 {
-
     private GameObject scene;
     private GameObject target;
     private GameObject mouse;

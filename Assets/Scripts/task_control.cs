@@ -28,10 +28,10 @@ public class task_control : MonoBehaviour
     public StreamWriter log;
     public int reward_amt = 1; //works with hardware for any positive value between 1 and 10.
     int reward_delivered;
-    Vector3 mouse_start_pos;
+    public Vector3 mouse_start_pos;
     public Vector3 target_start_pos; //target_start_pos.x is what stores the distance, including the circle radius for phase 3
     private float targetdistance;
-    private Quaternion mouse_start_rot;
+    public Quaternion mouse_start_rot;
     public int trial_index = 0;
     public float offset_gain = 0.5f;
     public float difficulty_increment;
@@ -42,7 +42,7 @@ public class task_control : MonoBehaviour
     public float timeout_time; //this is time when timeout will occur - update() slides this around
     private float trial_starttime; //container for start time of individual trials
     int[] trial_history; //container for last few trial outcomes used for running performance calculation
-    float timeout_travel_threshold = 0.5f;
+    public float timeout_travel_threshold = 0.5f;
     float timeout_scaling_gain = 1; //used for timeout scaling, gain is fraction of full time to add back (1 means time is stopped, 0 is unaffected)
     bool mouse_at_origin;
     bool target_in_fov;
@@ -294,7 +294,7 @@ public class task_control : MonoBehaviour
 
         //begin first trial
         Write_log((string)"Time zero at: " + DateTime.Now.ToString("HH:mm:ss.fff"));
-        newtrial();
+        // newtrial();
     }
 
     void Update()
@@ -365,7 +365,7 @@ public class task_control : MonoBehaviour
     }
 
     //functions
-    void win()
+    public void win()
     {
         Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\th\t" + trial_index.ToString());
         if (trial_missed == false) //if target was the first reached, trial is considered a hit and reward is delivered
@@ -381,7 +381,7 @@ public class task_control : MonoBehaviour
         newtrial(); //target hits always start a new trial
     }
 
-    void timeout()
+    public void timeout()
     {
         Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tf\t" + trial_index.ToString());
         trialoutcome(0);
@@ -401,7 +401,7 @@ public class task_control : MonoBehaviour
             newtrial();
     }
 
-    void newtrial()
+    public void newtrial()
     {
         trial_index++;
 

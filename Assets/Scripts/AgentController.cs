@@ -16,6 +16,8 @@ using UnityEngine.UI;
 public class AgentController : Agent
 {
     private GameObject scene;
+
+    private task_control taskControl;
     // private GameObject mouse;
     int phase;
     
@@ -33,19 +35,19 @@ public class AgentController : Agent
     private Quaternion mouse_start_rot;
     private float targetdistance;
     
-    private float trial_starttime; //container for start time of individual trials
-    public float timeout_time; //this is time when timeout will occur - update() slides this around
-    public float timeout_duration = 5;
-    public int reward_amt = 1;
-    
-    public int trial_index = 0;
-    int[] trial_history; //container for last few trial outcomes used for running performance calculation
-    public float difficulty_increment;
-    double difficulty_threshold = 0.7; //70% running performance required to increase target distance
-    public bool scale_difficulty;
-    public double running_performance;
-
-    public float offset_gain = 0.5f;
+    // private float trial_starttime; //container for start time of individual trials
+    // public float timeout_time; //this is time when timeout will occur - update() slides this around
+    // public float timeout_duration = 5;
+    // public int reward_amt = 1;
+    //
+    // public int trial_index = 0;
+    // int[] trial_history; //container for last few trial outcomes used for running performance calculation
+    // public float difficulty_increment;
+    // double difficulty_threshold = 0.7; //70% running performance required to increase target distance
+    // public bool scale_difficulty;
+    // public double running_performance;
+    //
+    // public float offset_gain = 0.5f;
 
     
     [SerializeField] private GameObject target;
@@ -59,27 +61,45 @@ public class AgentController : Agent
 
     public override void Initialize()
     {
+        
+        Debug.Log("initialize!!");
         rb = GetComponent<Rigidbody>();
         
         m_ResetParams = Academy.Instance.EnvironmentParameters;
-        difficulty_increment = (float)scene.GetComponent<scenes>().difficulty_increment;
-        scale_difficulty = scene.GetComponent<scenes>().scale_difficulty;
-        targetdistance = (float)scene.GetComponent<scenes>().targetdistance;
+        scene = GameObject.Find("Scenemanager");
+        target = GameObject.Find("target");
+
+        taskControl = GameObject.Find("task").GetComponent<task_control>();
         
-        timeout_duration = 5;
-        reward_amt = 1;
-        destroydecoys();
-        running_performance = 0;
+        if (rb == null)
+            Debug.LogError("mouseRigidbody is null!");
+        if (target == null)
+            Debug.LogError("target is null!");
+        if (taskControl == null)
+            Debug.LogError("taskControl is null!");
+        
+        // // difficulty_increment = (float)scene.GetComponent<scenes>().difficulty_increment;
+        // difficulty_increment = 1;
+        // // scale_difficulty = scene.GetComponent<scenes>().scale_difficulty;
+        // scale_difficulty = true;
+        // // targetdistance = (float)scene.GetComponent<scenes>().targetdistance;
+        // targetdistance = 2;
+        //
+        // timeout_duration = 5;
+        // reward_amt = 1;
+        // // destroydecoys();
+        // running_performance = 0;
         
         //initialize starting mouse and target positions
         Vector3 rot = transform.localRotation.eulerAngles;
         rotY = rot.y;
         rotX = rot.x;
         
-        mouse_start_pos = transform.position; //start_pos variables store reset positions between trials - mouse starts at ~(0,0,0)
-        mouse_start_rot = transform.rotation;
-        target_start_pos = new Vector3(targetdistance, 0.5f, 0f); //starting target distance defined by user 
+        // mouse_start_pos = transform.position; //start_pos variables store reset positions between trials - mouse starts at ~(0,0,0)
+        // mouse_start_rot = transform.rotation;
+        // target_start_pos = new Vector3(targetdistance, 0.5f, 0f); //starting target distance defined by user 
 
+        // taskControl.newtrial();
         // mousebody = mouse.GetComponent<Rigidbody>();
         // phase = scene.GetComponent<scenes>().phase;
         
@@ -125,26 +145,33 @@ public class AgentController : Agent
         // }
         //
         //reset mouse position
-        transform.position = mouse_start_pos;
-        transform.rotation = mouse_start_rot;
         
-        if (target != null)
-            target.transform.position = target_start_pos; //reset target position 
+        Debug.Log("episode begins!!");
         
-        // if (phase == 2) //add offsets to target position if phase 2
+        // transform.position = mouse_start_pos;
+        // transform.rotation = mouse_start_rot;
+        
+        // Reset the mouse position and rotation
+        transform.position = taskControl.mouse_start_pos;
+        transform.rotation = taskControl.mouse_start_rot;
+
+        // if (taskControl == null)
         // {
-        //     float poke = ((UnityEngine.Random.value * 2) - 1) * offset_gain * target_start_pos.x; // target moved L/R randomly up to gain value
-        //     Vector3 temp = target.transform.position; //need to use temporary object here for manual reassignment as transform.positon returns a struct, not a reference
-        //     temp.z += poke;
-        //     target.transform.position = temp;
+        //     Debug.LogError("taskcontrol is empty");
         // }
-        
+        // else
+        // {
+        taskControl.newtrial();
+        // }
+
         // Agent
         // transform.localPosition = new Vector3(Random.Range(-4f, 4f), 0.3f, Random.Range(-4f, 4f));
         // target.transform.localPosition = new Vector3(Random.Range(-4f, 4f), 0.3f, Random.Range(-4f, 4f))
     }
     public override void CollectObservations(VectorSensor sensor)
     {
+        
+        Debug.Log("collectObservation!!");
         sensor.AddObservation(transform.localPosition);
         sensor.AddObservation(target.transform.position);
         
@@ -152,9 +179,9 @@ public class AgentController : Agent
         // sensor.AddObservation(transform.rotation.x);
         sensor.AddObservation(transform.localRotation);
         
-        sensor.AddObservation(target.transform.position - transform.position);// 3
-        sensor.AddObservation(rb.angularVelocity);
-        sensor.AddObservation(rb.velocity); // 3
+        // sensor.AddObservation(target.transform.position - transform.position);// 3
+        // sensor.AddObservation(rb.angularVelocity);
+        // sensor.AddObservation(rb.velocity); // 3
     }
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
@@ -164,6 +191,7 @@ public class AgentController : Agent
         // Vector3 velocity = new Vector3(moveX, 0f, moveZ);
         // velocity = velocity.normalized * Time.deltaTime * moveSpeed;
         // transform.localPosition += velocity;
+        Debug.Log("OnActionReceived!!");
 
         float moveX = actionBuffers.ContinuousActions[0]; // Movement along the X axis (left/right)
         float moveZ = actionBuffers.ContinuousActions[1]; // Movement along the Z axis (forward/backward)
@@ -171,6 +199,8 @@ public class AgentController : Agent
         // Rotation actions
         float rotationX = actionBuffers.ContinuousActions[2]; // Rotation around the X axis (pitch)
         float rotationY = actionBuffers.ContinuousActions[3]; // Rotation around the Y axis (yaw)
+
+        Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX + "   " + rotationY);
 
         // Apply movement forces
         rb.AddRelativeForce(Vector3.right * moveX * gain);
@@ -184,8 +214,23 @@ public class AgentController : Agent
         Quaternion localRotation = Quaternion.Euler(rotX, rotY, 0.0f);
         transform.rotation = localRotation;
         
-        // rb.MovePosition(transform.position + transform.forward * moveForward * moveSpeed * Time.deltaTime);
-        // transform.Rotate(0f, moveRotate*moveSpeed, 0f, Space.Self);
+        // # TODO: how to set the penalty?(everytime receive a action including moving and rotation? or just the position changes)
+        // # TODO: reward and penalty
+        
+        float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
+        if (distanceToTarget < taskControl.timeout_travel_threshold)
+        {
+            SetReward(10f); // Reward the agent for getting close to the target
+            taskControl.win(); // Call the win function to deliver the reward and reset for a new trial
+            EndEpisode();
+        }
+        else if (Time.timeSinceLevelLoad > taskControl.timeout_time)
+        {
+            // Penalize the agent for timing out
+            SetReward(-5f);
+            taskControl.timeout(); // Handle timeout behavior
+            EndEpisode();
+        }
         
         // # TODO: take timeout into consideration
         // framenum += 1;
@@ -228,16 +273,25 @@ public class AgentController : Agent
         //     }
         // }
         
-        // # TODO: reward and penalty
+
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)
     {
-        ActionSegment<float> continuousActions = actionsOut.ContinuousActions;
+        Debug.Log("Heuristic being called");
+        var continuousActions = actionsOut.ContinuousActions;
+        // Debug.Log(continuousActions.ToString());
         continuousActions[0] = Input.GetAxis("Horizontal"); // X axis (A/D or Left/Right Arrow)
+        // Debug.Log(continuousActions[0]);
         continuousActions[1] = Input.GetAxis("Vertical");   // Z axis (W/S or Up/Down Arrow)
+        // Debug.Log(continuousActions[1]+"vertical");
+
         continuousActions[2] = Input.GetAxis("Mouse X");    // Mouse X axis for yaw
+        // Debug.Log(continuousActions[2]+"XXXX");
+
         continuousActions[3] = -Input.GetAxis("Mouse Y");   // Mouse Y axis for pitch
+        // Debug.Log(continuousActions[3]+"YY");
+
     }
 
     // private void OnTriggerEnter(Collider other)
@@ -255,28 +309,28 @@ public class AgentController : Agent
     //     
     // }
     
-    void destroydecoys()
-    {
-        GameObject[] decoys = GameObject.FindGameObjectsWithTag("decoys");
-        foreach (GameObject decoy in decoys)
-            GameObject.Destroy(decoy);
-        // Debug.Log("Found object: " + decoy.name);
-    }
-    void timeout()
-    {
-        // Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tf\t" + trial_index.ToString());
-        trialoutcome(0);
-        // if(phase > 0)
-        //     beep.Play();
-        EndEpisode();
-    }
-    
-    void trialoutcome(int outcome)
-    {
-        Array.Copy(trial_history, 1, trial_history, 0, trial_history.Length - 1);
-        trial_history[trial_history.Length - 1] = outcome;
-        // trials.Add(outcome);
-    }
+    // void destroydecoys()
+    // {
+    //     GameObject[] decoys = GameObject.FindGameObjectsWithTag("decoys");
+    //     foreach (GameObject decoy in decoys)
+    //         GameObject.Destroy(decoy);
+    //     // Debug.Log("Found object: " + decoy.name);
+    // }
+    // void timeout()
+    // {
+    //     // Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tf\t" + trial_index.ToString());
+    //     trialoutcome(0);
+    //     // if(phase > 0)
+    //     //     beep.Play();
+    //     EndEpisode();
+    // }
+    //
+    // void trialoutcome(int outcome)
+    // {
+    //     Array.Copy(trial_history, 1, trial_history, 0, trial_history.Length - 1);
+    //     trial_history[trial_history.Length - 1] = outcome;
+    //     // trials.Add(outcome);
+    // }
     // void win()
     // {
     //     // Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\th\t" + trial_index.ToString());
