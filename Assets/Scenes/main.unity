@@ -4559,6 +4559,8 @@ MonoBehaviour:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 5000
+  yangle: 0
+  rotationgain: 250
   gain: 15
   mouseSensitivity: 100
   clampAngle: 80
@@ -4588,7 +4590,7 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 0}
+  m_Model: {fileID: 5022602860645237092, guid: beeee54bffe873f458f0780355a99e42, type: 3}
   m_InferenceDevice: 0
   m_BehaviorType: 0
   m_BehaviorName: My Behavior
@@ -6856,6 +6858,11 @@ PrefabInstance:
       propertyPath: blackout_img_R
       value: 
       objectReference: {fileID: 127250202}
+    - target: {fileID: 1326203552594311186, guid: 764cc71f17c63794a972e74fcc6b1001,
+        type: 3}
+      propertyPath: AgentController
+      value: 
+      objectReference: {fileID: 1294005422}
     - target: {fileID: 1326203552594311186, guid: 764cc71f17c63794a972e74fcc6b1001,
         type: 3}
       propertyPath: timeout_duration

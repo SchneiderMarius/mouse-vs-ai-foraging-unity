@@ -21,6 +21,10 @@ public class AgentController : Agent
     // private GameObject mouse;
     int phase;
     
+    public float yangle;
+    // public float gain = 0.05f;
+    public float rotationgain = 250f;
+    
     public float gain = 15;
     public float mouseSensitivity = 100.0f;
     public float clampAngle = 80.0f;
@@ -196,29 +200,36 @@ public class AgentController : Agent
         float moveX = actionBuffers.ContinuousActions[0]; // Movement along the X axis (left/right)
         float moveZ = actionBuffers.ContinuousActions[1]; // Movement along the Z axis (forward/backward)
 
-        moveZ = Mathf.Clamp(moveZ, 0, 1); // Only allow forward movement (0 = no movement, 1 = full forward)
+        // moveZ = Mathf.Clamp(moveZ, 0, 1); // Only allow forward movement (0 = no movement, 1 = full forward)
 
         // Rotation actions
         // float rotationX = actionBuffers.ContinuousActions[2]; // Rotation around the X axis (pitch)
         float rotationY = actionBuffers.ContinuousActions[2]; // Rotation around the Y axis (yaw)
 
+        Vector3 move = new Vector3(moveX /127, 0.0f, moveZ/127);
+        float yangle = rotationY * rotationgain; // Scale rotation according to rotation gain
+
+        // Apply the movement and rotation
+        transform.Translate(move * gain, Space.Self);
+        transform.Rotate(0.0f, yangle / rotationgain, 0.0f, Space.Self);
+        
         // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX + "   " + rotationY);
         // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX);
-        // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationY);
+        Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationY);
 
         // Apply movement forces
-        rb.AddRelativeForce(Vector3.right * moveX * gain);
-        rb.AddRelativeForce(Vector3.forward * moveZ * gain);
+        // rb.AddRelativeForce(Vector3.right * moveX * gain);
+        // rb.AddRelativeForce(Vector3.forward * moveZ * gain);
 
         // Apply rotation
-        rotY += rotationY * mouseSensitivity * Time.deltaTime;
+        // rotY += rotationY * mouseSensitivity * Time.deltaTime;
         // rotX += rotationX * mouseSensitivity * Time.deltaTime;
-        rotX = Mathf.Clamp(rotX, -clampAngle, clampAngle);
+        // rotX = Mathf.Clamp(rotX, -clampAngle, clampAngle);
 
         // Quaternion localRotation = Quaternion.Euler(rotX, rotY, 0.0f);
         // Quaternion localRotation = Quaternion.Euler(rotX, 0.0f, 0.0f);
-        Quaternion localRotation = Quaternion.Euler(0.0f, rotY, 0.0f);
-        transform.rotation = localRotation;
+        // Quaternion localRotation = Quaternion.Euler(0.0f, rotY, 0.0f);
+        // transform.rotation = localRotation;
         
         // # TODO: how to set the penalty?(everytime receive a action including moving and rotation? or just the position changes)
         // # TODO: reward and penalty
@@ -226,14 +237,14 @@ public class AgentController : Agent
         // penalty for each action (including moving and rotation)
         SetReward(-1f);
         
-        float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
-        if (distanceToTarget < taskControl.timeout_travel_threshold)
-        {
-            SetReward(10f); // Reward the agent for getting close to the target
-            EndEpisode();
-            taskControl.win(); // Call the win function to deliver the reward and reset for a new trial
-            
-        }
+        // float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
+        // if (distanceToTarget < taskControl.timeout_travel_threshold)
+        // {
+        //     SetReward(10f); // Reward the agent for getting close to the target
+        //     EndEpisode();
+        //     taskControl.win(); // Call the win function to deliver the reward and reset for a new trial
+        //     
+        // }
         // else if (Time.timeSinceLevelLoad > taskControl.timeout_time)
         // {
         //     // Penalize the agent for timing out
