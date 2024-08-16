@@ -196,6 +196,8 @@ public class AgentController : Agent
         float moveX = actionBuffers.ContinuousActions[0]; // Movement along the X axis (left/right)
         float moveZ = actionBuffers.ContinuousActions[1]; // Movement along the Z axis (forward/backward)
 
+        moveZ = Mathf.Clamp(moveZ, 0, 1); // Only allow forward movement (0 = no movement, 1 = full forward)
+
         // Rotation actions
         // float rotationX = actionBuffers.ContinuousActions[2]; // Rotation around the X axis (pitch)
         float rotationY = actionBuffers.ContinuousActions[2]; // Rotation around the Y axis (yaw)
@@ -232,13 +234,13 @@ public class AgentController : Agent
             taskControl.win(); // Call the win function to deliver the reward and reset for a new trial
             
         }
-        else if (Time.timeSinceLevelLoad > taskControl.timeout_time)
-        {
-            // Penalize the agent for timing out
-            SetReward(-5f);
-            taskControl.timeout(); // Handle timeout behavior
-            EndEpisode();
-        }
+        // else if (Time.timeSinceLevelLoad > taskControl.timeout_time)
+        // {
+        //     // Penalize the agent for timing out
+        //     SetReward(-5f);
+        //     taskControl.timeout(); // Handle timeout behavior
+        //     EndEpisode();
+        // }
         
         // # TODO: take timeout into consideration
         // framenum += 1;

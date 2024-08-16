@@ -18,6 +18,7 @@ public class task_control : MonoBehaviour
     public GameObject mousecam_R;
     public GameObject audioobject;
     public GameObject sunobject;
+    public AgentController AgentController;
     Light sun;
     private float baseline_brightness;
     AudioSource beep;
@@ -132,6 +133,7 @@ public class task_control : MonoBehaviour
         baseline_brightness = sun.intensity;
         screenrecordpath = scene.GetComponent<scenes>().recordingdirectory;
         recordtoggle = scene.GetComponent<scenes>().recordtoggle;
+        AgentController = GameObject.Find("Mouse").GetComponent<AgentController>();
 
         //initialize starting mouse and target positions
         mouse_start_pos = mouse.transform.position; //start_pos variables store reset positions between trials - mouse starts at ~(0,0,0)
@@ -333,9 +335,17 @@ public class task_control : MonoBehaviour
             if (Time.timeSinceLevelLoad > timeout_time)
             {
                 if (newtrial_requires_stop == false)
+                {
+                    AgentController.SetReward(-10f);
+                    AgentController.EndEpisode();
                     timeout();
+                }
                 else if (mouse_avg_speed < 0.1)
+                {
+                    AgentController.SetReward(-10f);
+                    AgentController.EndEpisode();
                     timeout();
+                }
             }
         }
 
