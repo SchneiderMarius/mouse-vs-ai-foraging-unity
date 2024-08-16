@@ -4582,13 +4582,13 @@ MonoBehaviour:
     VectorObservationSize: 10
     NumStackedVectorObservations: 1
     m_ActionSpec:
-      m_NumContinuousActions: 4
+      m_NumContinuousActions: 3
       BranchSizes: 
-    VectorActionSize: 04000000
+    VectorActionSize: 03000000
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 0}
+  m_Model: {fileID: 5022602860645237092, guid: 775b22d2507dc704d9d21cba07d73505, type: 3}
   m_InferenceDevice: 0
   m_BehaviorType: 0
   m_BehaviorName: My Behavior

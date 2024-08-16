@@ -294,7 +294,7 @@ public class task_control : MonoBehaviour
 
         //begin first trial
         Write_log((string)"Time zero at: " + DateTime.Now.ToString("HH:mm:ss.fff"));
-        // newtrial();
+        newtrial();
     }
 
     void Update()

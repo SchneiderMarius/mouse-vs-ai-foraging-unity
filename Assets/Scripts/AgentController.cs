@@ -126,48 +126,48 @@ public class AgentController : Agent
         // framenum = 0;
     }
 
-    public override void OnEpisodeBegin()
-    {
-        // # TODO: take phase 2 into consideration
-        // trial_index++;
-        //
-        // //timeout timer math
-        // trial_starttime = Time.timeSinceLevelLoad;
-        // timeout_time = trial_starttime + timeout_duration; //this is time when timeout will occur - scaled realtime in update()
-        // // Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tn\t" + trial_index.ToString());
-        //
-        // //running performance and difficulty scaling
-        // running_performance = trial_history.Average(); //running performance is average across last n trials (set by trial_history length)
-        // if (running_performance >= difficulty_threshold && scale_difficulty) //distance scaling - increase distance to target if performance reaches threshold.
-        // {
-        //     target_start_pos.x += difficulty_increment;
-        //     Array.Clear(trial_history, 0, trial_history.Length); //clear array to only consider performance at current difficulty
-        // }
-        //
-        //reset mouse position
-        
-        Debug.Log("episode begins!!");
-        
-        // transform.position = mouse_start_pos;
-        // transform.rotation = mouse_start_rot;
-        
-        // Reset the mouse position and rotation
-        transform.position = taskControl.mouse_start_pos;
-        transform.rotation = taskControl.mouse_start_rot;
-
-        // if (taskControl == null)
-        // {
-        //     Debug.LogError("taskcontrol is empty");
-        // }
-        // else
-        // {
-        taskControl.newtrial();
-        // }
-
-        // Agent
-        // transform.localPosition = new Vector3(Random.Range(-4f, 4f), 0.3f, Random.Range(-4f, 4f));
-        // target.transform.localPosition = new Vector3(Random.Range(-4f, 4f), 0.3f, Random.Range(-4f, 4f))
-    }
+    // public override void OnEpisodeBegin()
+    // {
+    //     // # TODO: take phase 2 into consideration
+    //     // trial_index++;
+    //     //
+    //     // //timeout timer math
+    //     // trial_starttime = Time.timeSinceLevelLoad;
+    //     // timeout_time = trial_starttime + timeout_duration; //this is time when timeout will occur - scaled realtime in update()
+    //     // // Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tn\t" + trial_index.ToString());
+    //     //
+    //     // //running performance and difficulty scaling
+    //     // running_performance = trial_history.Average(); //running performance is average across last n trials (set by trial_history length)
+    //     // if (running_performance >= difficulty_threshold && scale_difficulty) //distance scaling - increase distance to target if performance reaches threshold.
+    //     // {
+    //     //     target_start_pos.x += difficulty_increment;
+    //     //     Array.Clear(trial_history, 0, trial_history.Length); //clear array to only consider performance at current difficulty
+    //     // }
+    //     //
+    //     //reset mouse position
+    //     
+    //     Debug.Log("episode begins!!");
+    //     
+    //     // transform.position = mouse_start_pos;
+    //     // transform.rotation = mouse_start_rot;
+    //     
+    //     // Reset the mouse position and rotation
+    //     transform.position = taskControl.mouse_start_pos;
+    //     transform.rotation = taskControl.mouse_start_rot;
+    //
+    //     // if (taskControl == null)
+    //     // {
+    //     //     Debug.LogError("taskcontrol is empty");
+    //     // }
+    //     // else
+    //     // {
+    //     // taskControl.update();
+    //     // }
+    //
+    //     // Agent
+    //     // transform.localPosition = new Vector3(Random.Range(-4f, 4f), 0.3f, Random.Range(-4f, 4f));
+    //     // target.transform.localPosition = new Vector3(Random.Range(-4f, 4f), 0.3f, Random.Range(-4f, 4f))
+    // }
     public override void CollectObservations(VectorSensor sensor)
     {
         
@@ -197,10 +197,12 @@ public class AgentController : Agent
         float moveZ = actionBuffers.ContinuousActions[1]; // Movement along the Z axis (forward/backward)
 
         // Rotation actions
-        float rotationX = actionBuffers.ContinuousActions[2]; // Rotation around the X axis (pitch)
-        float rotationY = actionBuffers.ContinuousActions[3]; // Rotation around the Y axis (yaw)
+        // float rotationX = actionBuffers.ContinuousActions[2]; // Rotation around the X axis (pitch)
+        float rotationY = actionBuffers.ContinuousActions[2]; // Rotation around the Y axis (yaw)
 
-        Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX + "   " + rotationY);
+        // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX + "   " + rotationY);
+        // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX);
+        // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationY);
 
         // Apply movement forces
         rb.AddRelativeForce(Vector3.right * moveX * gain);
@@ -208,21 +210,27 @@ public class AgentController : Agent
 
         // Apply rotation
         rotY += rotationY * mouseSensitivity * Time.deltaTime;
-        rotX += rotationX * mouseSensitivity * Time.deltaTime;
+        // rotX += rotationX * mouseSensitivity * Time.deltaTime;
         rotX = Mathf.Clamp(rotX, -clampAngle, clampAngle);
 
-        Quaternion localRotation = Quaternion.Euler(rotX, rotY, 0.0f);
+        // Quaternion localRotation = Quaternion.Euler(rotX, rotY, 0.0f);
+        // Quaternion localRotation = Quaternion.Euler(rotX, 0.0f, 0.0f);
+        Quaternion localRotation = Quaternion.Euler(0.0f, rotY, 0.0f);
         transform.rotation = localRotation;
         
         // # TODO: how to set the penalty?(everytime receive a action including moving and rotation? or just the position changes)
         // # TODO: reward and penalty
         
+        // penalty for each action (including moving and rotation)
+        SetReward(-1f);
+        
         float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
         if (distanceToTarget < taskControl.timeout_travel_threshold)
         {
             SetReward(10f); // Reward the agent for getting close to the target
-            taskControl.win(); // Call the win function to deliver the reward and reset for a new trial
             EndEpisode();
+            taskControl.win(); // Call the win function to deliver the reward and reset for a new trial
+            
         }
         else if (Time.timeSinceLevelLoad > taskControl.timeout_time)
         {
@@ -286,11 +294,8 @@ public class AgentController : Agent
         continuousActions[1] = Input.GetAxis("Vertical");   // Z axis (W/S or Up/Down Arrow)
         // Debug.Log(continuousActions[1]+"vertical");
 
+        // continuousActions[2] = -Input.GetAxis("Mouse Y");   // Mouse Y axis for pitch
         continuousActions[2] = Input.GetAxis("Mouse X");    // Mouse X axis for yaw
-        // Debug.Log(continuousActions[2]+"XXXX");
-
-        continuousActions[3] = -Input.GetAxis("Mouse Y");   // Mouse Y axis for pitch
-        // Debug.Log(continuousActions[3]+"YY");
 
     }
 
