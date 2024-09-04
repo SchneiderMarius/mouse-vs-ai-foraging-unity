@@ -22,10 +22,10 @@ public class AgentController : Agent
     int phase;
     
     public float yangle;
-    // public float gain = 0.05f;
+    public float gain = 0.05f;
     public float rotationgain = 250f;
     
-    public float gain = 15;
+    // public float gain = 15;
     public float mouseSensitivity = 100.0f;
     public float clampAngle = 80.0f;
     
@@ -74,14 +74,17 @@ public class AgentController : Agent
         target = GameObject.Find("target");
 
         taskControl = GameObject.Find("task").GetComponent<task_control>();
+        Vector3 rot = transform.localRotation.eulerAngles;
+        rotY = rot.y;
+        rotX = rot.x;
         
-        if (rb == null)
-            Debug.LogError("mouseRigidbody is null!");
-        if (target == null)
-            Debug.LogError("target is null!");
-        if (taskControl == null)
-            Debug.LogError("taskControl is null!");
-        
+        // if (rb == null)
+        //     Debug.LogError("mouseRigidbody is null!");
+        // if (target == null)
+        //     Debug.LogError("target is null!");
+        // if (taskControl == null)
+        //     Debug.LogError("taskControl is null!");
+        //
         // // difficulty_increment = (float)scene.GetComponent<scenes>().difficulty_increment;
         // difficulty_increment = 1;
         // // scale_difficulty = scene.GetComponent<scenes>().scale_difficulty;
@@ -95,9 +98,7 @@ public class AgentController : Agent
         // running_performance = 0;
         
         //initialize starting mouse and target positions
-        Vector3 rot = transform.localRotation.eulerAngles;
-        rotY = rot.y;
-        rotX = rot.x;
+
         
         // mouse_start_pos = transform.position; //start_pos variables store reset positions between trials - mouse starts at ~(0,0,0)
         // mouse_start_rot = transform.rotation;
@@ -175,13 +176,13 @@ public class AgentController : Agent
     public override void CollectObservations(VectorSensor sensor)
     {
         
-        Debug.Log("collectObservation!!");
+        // Debug.Log("collectObservation!!");
         sensor.AddObservation(transform.localPosition);
         sensor.AddObservation(target.transform.position);
+        sensor.AddObservation(transform.localRotation);
         
         // sensor.AddObservation(transform.rotation.z);
         // sensor.AddObservation(transform.rotation.x);
-        sensor.AddObservation(transform.localRotation);
         
         // sensor.AddObservation(target.transform.position - transform.position);// 3
         // sensor.AddObservation(rb.angularVelocity);
@@ -189,18 +190,8 @@ public class AgentController : Agent
     }
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
-        // float moveX = actions.ContinuousActions[0];
-        // float moveZ = actions.ContinuousActions[1];
-        
-        // Vector3 velocity = new Vector3(moveX, 0f, moveZ);
-        // velocity = velocity.normalized * Time.deltaTime * moveSpeed;
-        // transform.localPosition += velocity;
-        Debug.Log("OnActionReceived!!");
-
         float moveX = actionBuffers.ContinuousActions[0]; // Movement along the X axis (left/right)
         float moveZ = actionBuffers.ContinuousActions[1]; // Movement along the Z axis (forward/backward)
-
-        // moveZ = Mathf.Clamp(moveZ, 0, 1); // Only allow forward movement (0 = no movement, 1 = full forward)
 
         // Rotation actions
         // float rotationX = actionBuffers.ContinuousActions[2]; // Rotation around the X axis (pitch)
@@ -213,9 +204,15 @@ public class AgentController : Agent
         transform.Translate(move * gain, Space.Self);
         transform.Rotate(0.0f, yangle / rotationgain, 0.0f, Space.Self);
         
+        // penalty for each action (including moving and rotation)
+        SetReward(-1f);
+        
+        
+        // moveZ = Mathf.Clamp(moveZ, 0, 1); // Only allow forward movement (0 = no movement, 1 = full forward)
+        
         // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX + "   " + rotationY);
         // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX);
-        Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationY);
+        // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationY);
 
         // Apply movement forces
         // rb.AddRelativeForce(Vector3.right * moveX * gain);
@@ -233,9 +230,14 @@ public class AgentController : Agent
         
         // # TODO: how to set the penalty?(everytime receive a action including moving and rotation? or just the position changes)
         // # TODO: reward and penalty
+
+        // float moveX = actions.ContinuousActions[0];
+        // float moveZ = actions.ContinuousActions[1];
         
-        // penalty for each action (including moving and rotation)
-        SetReward(-1f);
+        // Vector3 velocity = new Vector3(moveX, 0f, moveZ);
+        // velocity = velocity.normalized * Time.deltaTime * moveSpeed;
+        // transform.localPosition += velocity;
+        // Debug.Log("OnActionReceived!!");
         
         // float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
         // if (distanceToTarget < taskControl.timeout_travel_threshold)
@@ -299,7 +301,7 @@ public class AgentController : Agent
 
     public override void Heuristic(in ActionBuffers actionsOut)
     {
-        Debug.Log("Heuristic being called");
+        // Debug.Log("Heuristic being called");
         var continuousActions = actionsOut.ContinuousActions;
         // Debug.Log(continuousActions.ToString());
         continuousActions[0] = Input.GetAxis("Horizontal"); // X axis (A/D or Left/Right Arrow)

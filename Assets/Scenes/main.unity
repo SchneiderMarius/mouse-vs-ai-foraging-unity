@@ -4490,7 +4490,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1294005412}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dbfaf85d31382264cb3a04eb23d7dfbf, type: 3}
   m_Name: 
@@ -4560,8 +4560,8 @@ MonoBehaviour:
   hasUpgradedFromAgentParameters: 1
   MaxStep: 5000
   yangle: 0
+  gain: 0.05
   rotationgain: 250
-  gain: 15
   mouseSensitivity: 100
   clampAngle: 80
   useVecObs: 0
@@ -4590,7 +4590,7 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 5022602860645237092, guid: beeee54bffe873f458f0780355a99e42, type: 3}
+  m_Model: {fileID: 0}
   m_InferenceDevice: 0
   m_BehaviorType: 0
   m_BehaviorName: My Behavior

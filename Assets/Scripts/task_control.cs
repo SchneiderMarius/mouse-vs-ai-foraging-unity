@@ -336,13 +336,13 @@ public class task_control : MonoBehaviour
             {
                 if (newtrial_requires_stop == false)
                 {
-                    AgentController.SetReward(-10f);
+                    // AgentController.SetReward(-10f);
                     AgentController.EndEpisode();
                     timeout();
                 }
                 else if (mouse_avg_speed < 0.1)
                 {
-                    AgentController.SetReward(-10f);
+                    // AgentController.SetReward(-10f);
                     AgentController.EndEpisode();
                     timeout();
                 }
@@ -377,7 +377,7 @@ public class task_control : MonoBehaviour
     //functions
     public void win()
     {
-        AgentController.SetReward(10f);
+        AgentController.SetReward(20f);
         Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\th\t" + trial_index.ToString());
         if (trial_missed == false) //if target was the first reached, trial is considered a hit and reward is delivered
         {
@@ -428,6 +428,7 @@ public class task_control : MonoBehaviour
             Debug.Log("diff == 5");
             scale_difficulty = false;
         }
+        
         running_performance = trial_history.Average(); //running performance is average across last n trials (set by trial_history length)
         if (running_performance >= difficulty_threshold && scale_difficulty) //distance scaling - increase distance to target if performance reaches threshold.
         {
