@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using Unity.MLAgents;
+using Unity.MLAgents.SideChannels;
 
 public class mainui : MonoBehaviour
 {
@@ -51,6 +53,8 @@ public class mainui : MonoBehaviour
         sessionTimeObject.text = "Time: " + DateTime.Now.ToString("HH:mm:ss.fff");
         fps = 1 / Time.smoothDeltaTime;
         fpsObject.text = "FPS: " + fps.ToString();
-
+        
+        var statsRecorder = Academy.Instance.StatsRecorder;
+        statsRecorder.Add("Session Performance", (float)session_performance);
     }
 }

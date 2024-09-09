@@ -3328,20 +3328,13 @@ MonoBehaviour:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
-  taskControl: {fileID: 0}
+  yangle: 0
   gain: 15
+  rotationgain: 250
   mouseSensitivity: 100
   clampAngle: 80
   useVecObs: 0
   target_start_pos: {x: 0, y: 0, z: 0}
-  timeout_time: 0
-  timeout_duration: 5
-  reward_amt: 1
-  trial_index: 0
-  difficulty_increment: 0
-  scale_difficulty: 0
-  running_performance: 0
-  offset_gain: 0.5
   target: {fileID: 0}
   moveSpeed: 4
 --- !u!114 &1294005423

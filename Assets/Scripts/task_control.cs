@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using Unity.MLAgents.SideChannels;
 
 public class task_control : MonoBehaviour
 {
@@ -422,11 +423,13 @@ public class task_control : MonoBehaviour
         timeout_time = trial_starttime + timeout_duration; //this is time when timeout will occur - scaled realtime in update()
         Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tn\t" + trial_index.ToString());
 
+        // Debug.Log(target_start_pos.x);
         //running performance and difficulty scaling
-        if (target_start_pos.x == 5)
+        if (target_start_pos.x >= 5)
         {
             Debug.Log("diff == 5");
             scale_difficulty = false;
+            target_start_pos.x = 5;
         }
         
         running_performance = trial_history.Average(); //running performance is average across last n trials (set by trial_history length)

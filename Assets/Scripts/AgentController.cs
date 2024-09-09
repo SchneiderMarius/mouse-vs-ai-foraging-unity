@@ -5,7 +5,6 @@ using Unity.MLAgents;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
-
 using System.IO;
 using System.IO.Ports;
 using System;
@@ -197,12 +196,15 @@ public class AgentController : Agent
         // float rotationX = actionBuffers.ContinuousActions[2]; // Rotation around the X axis (pitch)
         float rotationY = actionBuffers.ContinuousActions[2]; // Rotation around the Y axis (yaw)
 
-        Vector3 move = new Vector3(moveX /127, 0.0f, moveZ/127);
-        float yangle = rotationY * rotationgain; // Scale rotation according to rotation gain
+        // Vector3 move = new Vector3(moveX /127, 0.0f, moveZ/127);
+        Vector3 move = new Vector3(moveX, 0.0f, moveZ);
+        // float yangle = rotationY * rotationgain; // Scale rotation according to rotation gain
+        float yangle = rotationY; // Scale rotation according to rotation gain
 
         // Apply the movement and rotation
         transform.Translate(move * gain, Space.Self);
-        transform.Rotate(0.0f, yangle / rotationgain, 0.0f, Space.Self);
+        transform.Rotate(0.0f, yangle, 0.0f, Space.Self);
+        // transform.Rotate(0.0f, yangle, 0.0f, Space.Self);
         
         // penalty for each action (including moving and rotation)
         SetReward(-1f);
@@ -308,7 +310,6 @@ public class AgentController : Agent
         // Debug.Log(continuousActions[0]);
         continuousActions[1] = Input.GetAxis("Vertical");   // Z axis (W/S or Up/Down Arrow)
         // Debug.Log(continuousActions[1]+"vertical");
-
         // continuousActions[2] = -Input.GetAxis("Mouse Y");   // Mouse Y axis for pitch
         continuousActions[2] = Input.GetAxis("Mouse X");    // Mouse X axis for yaw
 
