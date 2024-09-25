@@ -4560,12 +4560,13 @@ MonoBehaviour:
   hasUpgradedFromAgentParameters: 1
   MaxStep: 5000
   yangle: 0
-  gain: 0.05
-  rotationgain: 250
+  gain: 1.5
+  rotationgain: 10
   mouseSensitivity: 100
   clampAngle: 80
   useVecObs: 0
   target_start_pos: {x: 0, y: 0, z: 0}
+  session_performance: 0
   target: {fileID: 1123977518}
   moveSpeed: 4
 --- !u!114 &1294005423

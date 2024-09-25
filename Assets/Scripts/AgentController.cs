@@ -21,8 +21,9 @@ public class AgentController : Agent
     int phase;
     
     public float yangle;
-    public float gain = 0.05f;
-    public float rotationgain = 250f;
+    // public float gain = 0.05f;
+    public float gain = 1.5f;
+    public float rotationgain = 10f;
     
     // public float gain = 15;
     public float mouseSensitivity = 100.0f;
@@ -37,6 +38,8 @@ public class AgentController : Agent
     public Vector3 target_start_pos; //target_start_pos.x is what stores the distance, including the circle radius for phase 3
     private Quaternion mouse_start_rot;
     private float targetdistance;
+    public double session_performance;
+    
     
     // private float trial_starttime; //container for start time of individual trials
     // public float timeout_time; //this is time when timeout will occur - update() slides this around
@@ -73,6 +76,7 @@ public class AgentController : Agent
         target = GameObject.Find("target");
 
         taskControl = GameObject.Find("task").GetComponent<task_control>();
+        session_performance = taskControl.GetComponent<task_control>().session_performance;
         Vector3 rot = transform.localRotation.eulerAngles;
         rotY = rot.y;
         rotX = rot.x;
@@ -131,6 +135,11 @@ public class AgentController : Agent
     }
 
     // public override void OnEpisodeBegin()
+    // {
+    //     var statsRecorder = Academy.Instance.StatsRecorder;
+    //     statsRecorder.Add("Session Performance", (float)session_performance);
+    //     
+    // }
     // {
     //     // # TODO: take phase 2 into consideration
     //     // trial_index++;
@@ -197,19 +206,22 @@ public class AgentController : Agent
         float rotationY = actionBuffers.ContinuousActions[2]; // Rotation around the Y axis (yaw)
 
         // Vector3 move = new Vector3(moveX /127, 0.0f, moveZ/127);
-        Vector3 move = new Vector3(moveX, 0.0f, moveZ);
-        // float yangle = rotationY * rotationgain; // Scale rotation according to rotation gain
-        float yangle = rotationY; // Scale rotation according to rotation gain
+        moveX = moveX * gain * Time.deltaTime;
+        moveZ = moveZ * gain * Time.deltaTime;
 
+        Vector3 move = new Vector3(moveX, 0.0f, moveZ) ;
+        float yangle = rotationY * rotationgain * Time.deltaTime; // Scale rotation according to rotation gain
+        // float yangle = rotationY * rotationgain; // Scale rotation according to rotation gain
+
+        Debug.Log(rotationgain+ " rtgain");
         // Apply the movement and rotation
-        transform.Translate(move * gain, Space.Self);
+        transform.Translate(move, Space.Self);
         transform.Rotate(0.0f, yangle, 0.0f, Space.Self);
         // transform.Rotate(0.0f, yangle, 0.0f, Space.Self);
         
         // penalty for each action (including moving and rotation)
         SetReward(-1f);
-        
-        
+
         // moveZ = Mathf.Clamp(moveZ, 0, 1); // Only allow forward movement (0 = no movement, 1 = full forward)
         
         // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX + "   " + rotationY);

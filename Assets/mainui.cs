@@ -54,7 +54,7 @@ public class mainui : MonoBehaviour
         fps = 1 / Time.smoothDeltaTime;
         fpsObject.text = "FPS: " + fps.ToString();
         
-        var statsRecorder = Academy.Instance.StatsRecorder;
-        statsRecorder.Add("Session Performance", (float)session_performance);
+        // var statsRecorder = Academy.Instance.StatsRecorder;
+        // statsRecorder.Add("Session Performance", (float)session_performance);
     }
 }

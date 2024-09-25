@@ -337,13 +337,13 @@ public class task_control : MonoBehaviour
             {
                 if (newtrial_requires_stop == false)
                 {
-                    // AgentController.SetReward(-10f);
+                    // AgentController.SetReward(-5f);
                     AgentController.EndEpisode();
                     timeout();
                 }
                 else if (mouse_avg_speed < 0.1)
                 {
-                    // AgentController.SetReward(-10f);
+                    // AgentController.SetReward(-5f);
                     AgentController.EndEpisode();
                     timeout();
                 }
@@ -427,7 +427,7 @@ public class task_control : MonoBehaviour
         //running performance and difficulty scaling
         if (target_start_pos.x >= 5)
         {
-            Debug.Log("diff == 5");
+            // Debug.Log("diff == 5");
             scale_difficulty = false;
             target_start_pos.x = 5;
         }
