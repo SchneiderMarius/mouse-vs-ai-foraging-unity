@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using Unity.MLAgents.SideChannels;
+using UnityEngine;
 
 public class task_control : MonoBehaviour
 {
@@ -20,6 +21,7 @@ public class task_control : MonoBehaviour
     public GameObject audioobject;
     public GameObject sunobject;
     public AgentController AgentController;
+    
     Light sun;
     private float baseline_brightness;
     AudioSource beep;
@@ -109,6 +111,7 @@ public class task_control : MonoBehaviour
 
     void Start()
     {
+        // UnityEngine.Random.InitState(12345);
         //get references etc
         scene = GameObject.Find("Scenemanager");
         target = GameObject.Find("target");
@@ -468,6 +471,7 @@ public class task_control : MonoBehaviour
         if (phase == 2) //add offsets to target position if phase 2
         {
             float poke = ((UnityEngine.Random.value * 2) - 1) * offset_gain * target_start_pos.x; // target moved L/R randomly up to gain value
+            // Debug.Log(UnityEngine.Random.value);
             Vector3 temp = target.transform.position; //need to use temporary object here for manual reassignment as transform.positon returns a struct, not a reference
             temp.z += poke;
             target.transform.position = temp;
@@ -649,8 +653,9 @@ public class task_control : MonoBehaviour
 
         //log stimulus type as well
         Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\ts\t" + stimulus.ToString()); //changed to 's' 5/17/24
-
+        // Debug.Log(stimulus.ToString());
         //output new trial trigger
+        
         //trialTrigger();
     
     }

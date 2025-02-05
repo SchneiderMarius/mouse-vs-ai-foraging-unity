@@ -42,9 +42,9 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     customRenderPipeline: {fileID: 0}
     excludedTargetPlatforms:
-    - Standalone
     - Windows Store Apps
     - Android
+    - Standalone
   - serializedVersion: 2
     name: Low
     pixelLightCount: 0

@@ -4383,6 +4383,7 @@ GameObject:
   - component: {fileID: 1294005423}
   - component: {fileID: 1294005422}
   - component: {fileID: 1294005424}
+  - component: {fileID: 1294005425}
   m_Layer: 0
   m_Name: Mouse
   m_TagString: Untagged
@@ -4564,7 +4565,6 @@ MonoBehaviour:
   rotationgain: 10
   mouseSensitivity: 100
   clampAngle: 80
-  useVecObs: 0
   target_start_pos: {x: 0, y: 0, z: 0}
   session_performance: 0
   target: {fileID: 1123977518}
@@ -4582,7 +4582,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 10
+    VectorObservationSize: 0
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 3
@@ -4591,7 +4591,7 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 0}
+  m_Model: {fileID: 5022602860645237092, guid: 5be260e66da6a4a4fa0b6dfe7e212fb1, type: 3}
   m_InferenceDevice: 0
   m_BehaviorType: 0
   m_BehaviorName: My Behavior
@@ -4613,6 +4613,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DecisionPeriod: 5
   TakeActionsBetweenDecisions: 1
+--- !u!114 &1294005425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1294005412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 282f342c2ab144bf38be65d4d0c4e07d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Camera: {fileID: 963194227}
+  m_SensorName: CameraSensor
+  m_Width: 155
+  m_Height: 86
+  m_Grayscale: 1
+  m_ObservationType: 0
+  m_ObservationStacks: 1
+  m_Compression: 1
 --- !u!1 &1306704432
 GameObject:
   m_ObjectHideFlags: 0
@@ -6861,9 +6881,19 @@ PrefabInstance:
       objectReference: {fileID: 127250202}
     - target: {fileID: 1326203552594311186, guid: 764cc71f17c63794a972e74fcc6b1001,
         type: 3}
+      propertyPath: stimulus_chaos
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1326203552594311186, guid: 764cc71f17c63794a972e74fcc6b1001,
+        type: 3}
       propertyPath: AgentController
       value: 
       objectReference: {fileID: 1294005422}
+    - target: {fileID: 1326203552594311186, guid: 764cc71f17c63794a972e74fcc6b1001,
+        type: 3}
+      propertyPath: chaos_blackouts
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1326203552594311186, guid: 764cc71f17c63794a972e74fcc6b1001,
         type: 3}
       propertyPath: timeout_duration
@@ -6918,6 +6948,11 @@ PrefabInstance:
         type: 3}
       propertyPath: timeout_travel_threshold
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1326203552594311186, guid: 764cc71f17c63794a972e74fcc6b1001,
+        type: 3}
+      propertyPath: random_blackouts_activated
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1326203552594311186, guid: 764cc71f17c63794a972e74fcc6b1001,
         type: 3}

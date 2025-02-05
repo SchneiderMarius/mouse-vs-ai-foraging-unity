@@ -45,6 +45,8 @@ public class scenes : MonoBehaviour
         logdirectory = "";
         recordingdirectory = "";
         recordtoggle = false;
+        // Screen.SetResolution(155, 86, false);
+
     }
 
     // Update is called once per frame
