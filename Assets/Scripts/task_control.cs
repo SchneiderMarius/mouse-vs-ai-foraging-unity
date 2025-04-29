@@ -900,6 +900,19 @@ public class task_control : MonoBehaviour
         }
     }
 
+    IEnumerator DeferDisableTerrain()
+    {
+        // Wait until the next frame
+        yield return null;
+
+        // Disable terrain components
+        terrain.GetComponent<Terrain>().enabled = false;
+        foreach (Terrain thisterrain in outerterrains)
+        {
+            thisterrain.enabled = false;
+        }
+    }
+
     int Flip_Chaos()
     {
 
@@ -947,11 +960,13 @@ public class task_control : MonoBehaviour
                 mousecam.GetComponent<customcamshader>().enabled = true;
                 mousecam_L.GetComponent<customcamshader>().enabled = true;
                 mousecam_R.GetComponent<customcamshader>().enabled = true;
-                terrain.GetComponent<Terrain>().enabled = false;
-                foreach (Terrain thisterrain in outerterrains)
-                {
-                    thisterrain.enabled = false;
-                }
+                
+                StartCoroutine(DeferDisableTerrain());
+                // terrain.GetComponent<Terrain>().enabled = false;
+                // foreach (Terrain thisterrain in outerterrains)
+                // {
+                //     thisterrain.enabled = false;
+                // }
                 break;
             case 5: //RDK
                 RDKmask.SetActive(true);

@@ -169,6 +169,8 @@ public class AgentController : Agent
     //     // sensor.AddObservation(transform.rotation.z);
     //     // sensor.AddObservation(transform.rotation.x);
     //     
+    
+    
     //     // sensor.AddObservation(target.transform.position - transform.position);// 3
     //     // sensor.AddObservation(rb.angularVelocity);
     //     // sensor.AddObservation(rb.velocity); // 3
@@ -183,30 +185,30 @@ public class AgentController : Agent
         // float rotationX = actionBuffers.ContinuousActions[2]; // Rotation around the X axis (pitch)
         float rotationY = actionBuffers.ContinuousActions[2]; // Rotation around the Y axis (yaw)
 
-        // Vector3 move = new Vector3(moveX /127, 0.0f, m
-        // oveZ/127);
         moveX = moveX * gain * Time.deltaTime;
         moveZ = moveZ * gain * Time.deltaTime;
 
         Vector3 move = new Vector3(moveX, 0.0f, moveZ) ;
         float yangle = rotationY * rotationgain * Time.deltaTime; // Scale rotation according to rotation gain
-        // float yangle = rotationY * rotationgain; // Scale rotation according to rotation gain
 
-        // Debug.Log(rotationgain+ " rtgain");
         // Apply the movement and rotation
         transform.Translate(move, Space.Self);
         transform.Rotate(0.0f, yangle, 0.0f, Space.Self);
-        // transform.Rotate(0.0f, yangle, 0.0f, Space.Self);
-        
+
         // penalty for each action (including moving and rotation)
         SetReward(-1f);
-
-        // moveZ = Mathf.Clamp(moveZ, 0, 1); // Only allow forward movement (0 = no movement, 1 = full forward)
-        
-        // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX + "   " + rotationY);
-        // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationX);
-        // Debug.Log("actionReceived" + moveX + "  " + moveZ + "  " + rotationY);
-        
+        // float thr
+        // eshold = 0.0001f;
+        // if (Mathf.Abs(moveX) > threshold || Mathf.Abs(moveZ) > threshold)
+        // {
+        //     AddReward(-1f); // penalize for movement
+        // }
+        //
+        // // If there's nontrivial rotation
+        // if (Mathf.Abs(rotationY) > threshold)
+        // {
+        //     AddReward(-1f); // penalize for rotation
+        // }
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)
