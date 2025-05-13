@@ -49,6 +49,7 @@
 # Ignore IDE folders
 .idea/
 .vscode/
+.history/
 
 # Ignore Python files
 __pycache__/
