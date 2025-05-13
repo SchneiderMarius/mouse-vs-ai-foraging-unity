@@ -40,8 +40,7 @@ def train(run_id, env_path, config_path, total_runs=5):
             f.write(f"{run_id}_{next_run + i}.txt")
         time.sleep(1)
 
-        replace.replace_nature_visual_encoder("C:/Users/BionicVisionVR/miniconda3/envs/mouse3/Lib/site-packages/mlagents/trainers/torch/encoders.py", ".Encoders/"+run_id+".py")
-
+        
         cmd = [
             "mlagents-learn",
             config_path,
@@ -57,7 +56,7 @@ def train(run_id, env_path, config_path, total_runs=5):
         
         time.sleep(5)
 
-def train_multiple_networks(networks, env_path, base_config_path, runs_per_network=5):
+def train_multiple_networks(networks, env_path, runs_per_network=5):
     """
     Train multiple visual networks, running each one multiple times.
     
@@ -70,6 +69,8 @@ def train_multiple_networks(networks, env_path, base_config_path, runs_per_netwo
         base_config_path (str): Base path for config files
         runs_per_network (int): Number of times to run each network
     """
+
+
     for network in networks:
         if network == "fully_connected":
             config_path = "./Config/fc.yaml"
@@ -79,7 +80,9 @@ def train_multiple_networks(networks, env_path, base_config_path, runs_per_netwo
             config_path = "./Config/resnet.yaml"
         else:
             config_path = "./Config/nature.yaml"
-            
+            if network != "nature_cnn":
+                replace.replace_nature_visual_encoder("C:/Users/BionicVisionVR/miniconda3/envs/mouse/Lib/site-packages/mlagents/trainers/torch/encoders.py", ".Encoders/"+run_id+".py")
+
         print(f"\nStarting training for network: {network}")
         train(
             run_id=network,
@@ -91,9 +94,8 @@ def train_multiple_networks(networks, env_path, base_config_path, runs_per_netwo
 
 if __name__ == "__main__":
     env_path = "C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/Grey/2D go to target v1.exe"
-    base_config_path = "./Config"
     
     # Define your networks here with both built-in and custom encoder types
     networks = ["nature_cnn", "simple", "resnet", "neurips", "alexnet", "fully_connected", "mousenet", "vonenet"]
     
-    train_multiple_networks(networks, env_path, base_config_path, runs_per_network=5)
+    train_multiple_networks(networks, env_path, runs_per_network=5)
