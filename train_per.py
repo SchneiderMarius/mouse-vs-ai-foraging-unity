@@ -36,10 +36,9 @@ def train(run_id, env_path, config_path, total_runs=5):
     for i in range(total_runs):
         current_run_id = f"{run_id}_{next_run + i}"
         print(f"Starting training: {current_run_id}")
-        with open("C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/Grey/2D go to target v1_Data/StreamingAssets/currentLog.txt", "w") as f:
+        with open("C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/Test/2D go to target v1_Data/StreamingAssets/currentLog.txt", "w") as f:
             f.write(f"{run_id}_{next_run + i}.txt")
         time.sleep(1)
-
         
         cmd = [
             "mlagents-learn",
@@ -70,7 +69,6 @@ def train_multiple_networks(networks, env_path, runs_per_network=5):
         runs_per_network (int): Number of times to run each network
     """
 
-
     for network in networks:
         if network == "fully_connected":
             config_path = "./Config/fc.yaml"
@@ -81,7 +79,7 @@ def train_multiple_networks(networks, env_path, runs_per_network=5):
         else:
             config_path = "./Config/nature.yaml"
             if network != "nature_cnn":
-                replace.replace_nature_visual_encoder("C:/Users/BionicVisionVR/miniconda3/envs/mouse/Lib/site-packages/mlagents/trainers/torch/encoders.py", ".Encoders/"+run_id+".py")
+                replace.replace_nature_visual_encoder("C:/Users/BionicVisionVR/miniconda3/envs/mouse/Lib/site-packages/mlagents/trainers/torch/encoders.py", ".Encoders/" + network + ".py")
 
         print(f"\nStarting training for network: {network}")
         train(
@@ -93,9 +91,11 @@ def train_multiple_networks(networks, env_path, runs_per_network=5):
         print(f"Completed all runs for network: {network}\n")
 
 if __name__ == "__main__":
-    env_path = "C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/Grey/2D go to target v1.exe"
+    env_path = "C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/Test/2D go to target v1.exe"
     
     # Define your networks here with both built-in and custom encoder types
-    networks = ["nature_cnn", "simple", "resnet", "neurips", "alexnet", "fully_connected", "mousenet", "vonenet"]
+
+    # , "alexnet", "fully_connected", "mousenet", "vonenet"
+    networks = ["nature_cnn", "simple", "resnet", "neurips"]
     
-    train_multiple_networks(networks, env_path, runs_per_network=5)
+    train_multiple_networks(networks, env_path, runs_per_network=2)
