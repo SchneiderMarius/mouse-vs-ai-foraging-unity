@@ -25,25 +25,29 @@ def replace_nature_visual_encoder(encoder_file_path, custom_encoder_file_path):
         print(f"Error: Custom encoder file not found at {custom_encoder_file_path}")
         return
 
-    #  Find the start and end of the NatureVisualEncoder class definition.
+    # Find the start and end of the NatureVisualEncoder class definition
     start_marker = "class NatureVisualEncoder(nn.Module):"
-    end_marker = "def forward(self, visual_obs: torch.Tensor) -> torch.Tensor:"  # Find unique line.
-
+    # Find the next class definition or end of file
+    lines = encoder_code.split('\n')
     start_index = encoder_code.find(start_marker)
-    end_index = encoder_code.find(end_marker)
-
-    if start_index == -1 or end_index == -1:
+    if start_index == -1:
         print("Error: Could not find NatureVisualEncoder definition in encoder.py")
         return
 
-    # Extract the code before and after the NatureVisualEncoder definition.
-    code_before = encoder_code[:start_index]
-    code_after = encoder_code[end_index + len(end_marker):]
+    # Find the next class definition
+    next_class_index = encoder_code.find("\nclass ", start_index + len(start_marker))
+    if next_class_index == -1:
+        # If no next class, use the end of file
+        next_class_index = len(encoder_code)
 
-    # Construct the new encoder.py code.
+    # Extract the code before and after the NatureVisualEncoder definition
+    code_before = encoder_code[:start_index]
+    code_after = encoder_code[next_class_index:]
+
+    # Construct the new encoder.py code
     new_encoder_code = code_before + custom_encoder_code + code_after
 
-    # Write the modified code back to encoder.py.
+    # Write the modified code back to encoder.py
     try:
         with open(encoder_file_path, 'w') as f:
             f.write(new_encoder_code)
