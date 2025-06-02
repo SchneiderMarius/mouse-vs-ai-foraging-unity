@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 import glob
 import replace
+import test
 
 def get_next_run_number(base_name, results_dir="./results"):
     """Get the next run number for a given base name by checking existing results."""
@@ -55,6 +56,11 @@ def train(run_id, env_path, config_path, total_runs=5):
         
         time.sleep(5)
 
+        # Call the test function to evaluate the trained model
+        test.test(
+            model_name=current_run_id
+        )
+
 def train_multiple_networks(networks, env_path, runs_per_network=5):
     """
     Train multiple visual networks, running each one multiple times.
@@ -79,7 +85,7 @@ def train_multiple_networks(networks, env_path, runs_per_network=5):
         else:
             config_path = "./Config/nature.yaml"
             if network != "nature_cnn":
-                replace.replace_nature_visual_encoder("C:/Users/BionicVisionVR/miniconda3/envs/mouse/Lib/site-packages/mlagents/trainers/torch/encoders.py", ".Encoders/" + network + ".py")
+                replace.replace_nature_visual_encoder("C:/Users/BionicVisionVR/miniconda3/envs/mouse/Lib/site-packages/mlagents/trainers/torch/encoders.py", "./Encoders/" + network + ".py")
 
         print(f"\nStarting training for network: {network}")
         train(
@@ -96,6 +102,7 @@ if __name__ == "__main__":
     # Define your networks here with both built-in and custom encoder types
 
     # , "alexnet", "fully_connected", "mousenet", "vonenet"
-    networks = ["nature_cnn", "simple", "resnet", "neurips"]
+    # networks = ["nature_cnn", "simple", "resnet", "neurips"]
+    networks = ["neurips"]
     
     train_multiple_networks(networks, env_path, runs_per_network=2)
