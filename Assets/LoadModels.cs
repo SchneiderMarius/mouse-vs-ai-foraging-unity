@@ -12,13 +12,12 @@ public class LoadModels : MonoBehaviour
         string modelName = GetModelNameFromArgs();
         if (!string.IsNullOrEmpty(modelName))
         {
-            LoadModelFromResources(modelName);
+            LoadModel(modelName);
         }
         else
         {
             Debug.LogWarning("No --model= passed. Using default.");
         }
-
     }
 
     string GetModelNameFromArgs()
@@ -34,20 +33,37 @@ public class LoadModels : MonoBehaviour
         return null;
     }
 
-    void LoadModelFromResources(string modelName)
+    void LoadModel(string modelPath)
     {
-        modelName = Path.GetFileNameWithoutExtension(modelName);
-
-        NNModel model = Resources.Load<NNModel>("Models/" + modelName);
-        if (model != null)
+        try
         {
+            // First try to load from Resources folder
+            string modelName = Path.GetFileNameWithoutExtension(modelPath);
+            NNModel model = Resources.Load<NNModel>("Models/" + modelName);
+            
+            if (model == null)
+            {
+                // If not in Resources, try to load from file system
+                if (File.Exists(modelPath))
+                {
+                    byte[] modelData = File.ReadAllBytes(modelPath);
+                    model = ScriptableObject.CreateInstance<NNModel>();
+                    model.modelData = modelData;
+                }
+                else
+                {
+                    Debug.LogError($"Model not found at path: {modelPath}");
+                    return;
+                }
+            }
+
             behaviorParameters.Model = model;
             behaviorParameters.BehaviorType = BehaviorType.InferenceOnly;
-            Debug.Log("Loaded model: " + modelName);
+            Debug.Log("Loaded model: " + modelPath);
         }
-        else
+        catch (System.Exception e)
         {
-            Debug.LogError("Model not found in Resources/Models/: " + modelName);
+            Debug.LogError($"Error loading model: {e.Message}");
         }
     }
 }
