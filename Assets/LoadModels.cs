@@ -48,7 +48,7 @@ public class LoadModels : MonoBehaviour
                 {
                     byte[] modelData = File.ReadAllBytes(modelPath);
                     model = ScriptableObject.CreateInstance<NNModel>();
-                    model.modelData = modelData;
+                    model.modelData = new NNModelData { Value = modelData };
                 }
                 else
                 {
