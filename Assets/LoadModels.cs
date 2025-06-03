@@ -27,7 +27,6 @@ public class LoadModels : MonoBehaviour
         LoadModel(modelName);
     }
 
-
     string GetModelNameFromArgs()
     {
         string[] args = System.Environment.GetCommandLineArgs();
@@ -51,16 +50,35 @@ public class LoadModels : MonoBehaviour
             
             if (model == null)
             {
-                // If not in Resources, try to load from file system
-                if (File.Exists(modelPath))
+                // Ensure the model is in StreamingAssets
+                string streamingAssetsPath = Path.Combine(Application.streamingAssetsPath, "Models");
+                string targetPath = Path.Combine(streamingAssetsPath, Path.GetFileName(modelPath));
+                
+                // Create Models directory in StreamingAssets if it doesn't exist
+                if (!Directory.Exists(streamingAssetsPath))
                 {
-                    byte[] modelData = File.ReadAllBytes(modelPath);
+                    Directory.CreateDirectory(streamingAssetsPath);
+                }
+
+                // Copy the model to StreamingAssets if it's not already there
+                if (!File.Exists(targetPath) || File.GetLastWriteTime(modelPath) > File.GetLastWriteTime(targetPath))
+                {
+                    File.Copy(modelPath, targetPath, true);
+                    Debug.Log($"Copied model to StreamingAssets: {targetPath}");
+                }
+
+                // Load the model from StreamingAssets
+                if (File.Exists(targetPath))
+                {
+                    byte[] modelData = File.ReadAllBytes(targetPath);
                     model = ScriptableObject.CreateInstance<NNModel>();
-                    model.modelData = new NNModelData { Value = modelData };
+                    var modelDataObj = ScriptableObject.CreateInstance<NNModelData>();
+                    modelDataObj.Value = modelData;
+                    model.modelData = modelDataObj;
                 }
                 else
                 {
-                    Debug.LogError($"Model not found at path: {modelPath}");
+                    Debug.LogError($"Failed to copy model to StreamingAssets: {targetPath}");
                     return;
                 }
             }
@@ -72,6 +90,10 @@ public class LoadModels : MonoBehaviour
         catch (System.Exception e)
         {
             Debug.LogError($"Error loading model: {e.Message}");
+            if (e.Message.Contains("Format version not supported"))
+            {
+                Debug.LogError("This error typically occurs when the model file was created with a different version of Unity or Barracuda than what you're currently using. Please ensure you're using compatible versions.");
+            }
         }
     }
 }
