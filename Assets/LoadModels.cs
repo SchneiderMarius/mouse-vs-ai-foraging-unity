@@ -7,18 +7,26 @@ public class LoadModels : MonoBehaviour
 {
     public BehaviorParameters behaviorParameters;
 
+    [SerializeField]
+    private string fallbackModelName = "./results/neurips_3/My Behavior.onnx";
+
     void Start()
     {
         string modelName = GetModelNameFromArgs();
-        if (!string.IsNullOrEmpty(modelName))
+        if (string.IsNullOrEmpty(modelName))
         {
-            LoadModel(modelName);
-        }
-        else
-        {
+    #if UNITY_EDITOR
+            modelName = fallbackModelName;
+            Debug.LogWarning("No --model= passed. Using fallbackModelName in editor.");
+    #else
             Debug.LogWarning("No --model= passed. Using default.");
+            return;
+    #endif
         }
+
+        LoadModel(modelName);
     }
+
 
     string GetModelNameFromArgs()
     {
