@@ -37,7 +37,10 @@ def train(run_id, env_path, config_path, total_runs=5):
     for i in range(total_runs):
         current_run_id = f"{run_id}_{next_run + i}"
         print(f"Starting training: {current_run_id}")
-        with open("C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/Test/2D go to target v1_Data/StreamingAssets/currentLog.txt", "w") as f:
+        
+        # replace the path with where you have your exe file, but keep the rest of the path the same
+        # e.g. "whichever folder you save your exe file" + "/2D go to target v1_Data/StreamingAssets/currentLog.txt"
+        with open("./Builds/train-test/2D go to target v1_Data/StreamingAssets/currentLog.txt", "w") as f:
             f.write(f"{run_id}_{next_run + i}.txt")
         time.sleep(1)
         
@@ -57,8 +60,14 @@ def train(run_id, env_path, config_path, total_runs=5):
         time.sleep(5)
 
         # Call the test function to evaluate the trained model
+        """
+        Args:
+            model_name: Name of the model to be tested (with id)
+            model_file: Path to the ONNX model file
+            test_type: Type of test to run (e.g., "Perturbation"(default), "Normal", "Random")
+        """
         test.test(
-            model_name=current_run_id
+            model_name = current_run_id
         )
 
 def train_multiple_networks(networks, env_path, runs_per_network=5):
@@ -85,6 +94,7 @@ def train_multiple_networks(networks, env_path, runs_per_network=5):
         else:
             config_path = "./Config/nature.yaml"
             if network != "nature_cnn":
+                # Replace the path with where your conda environment is located
                 replace.replace_nature_visual_encoder("C:/Users/BionicVisionVR/miniconda3/envs/mouse/Lib/site-packages/mlagents/trainers/torch/encoders.py", "./Encoders/" + network + ".py")
 
         print(f"\nStarting training for network: {network}")
@@ -97,7 +107,7 @@ def train_multiple_networks(networks, env_path, runs_per_network=5):
         print(f"Completed all runs for network: {network}\n")
 
 if __name__ == "__main__":
-    env_path = "C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/Test/2D go to target v1.exe"
+    env_path = "./Builds/train-test/2D go to target v1.exe"
     
     # Define your networks here with both built-in and custom encoder types
 

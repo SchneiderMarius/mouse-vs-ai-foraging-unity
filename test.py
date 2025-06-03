@@ -2,7 +2,7 @@ import subprocess
 import os
 import time
 
-def test(model_name, model_file="My Behavior.onnx", test_type="Perturbation", duration=600):
+def test(model_name, model_file="My Behavior.onnx", test_type="Perturbation1", duration=600):
     """
     Args:
         model_name: Name of the model to be tested
@@ -10,13 +10,16 @@ def test(model_name, model_file="My Behavior.onnx", test_type="Perturbation", du
         test_type: Type of test to run (e.g., "Perturbation", "Normal", "Random")
         duration: Duration of the test in seconds (default: 60)
     """
-
-    exe_path = r"C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/" + test_type + "/2D go to target v1.exe"
+    # replace the path with where you have your exe file
+    exe_path = r"./Builds/" + test_type + "/2D go to target v1.exe"
+    model_file = "./results/" + model_name + model_file
     model_name = model_name + "-test"
-    # model_file =
+
 
     # write log file's name
-    with open("C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/Test/2D go to target v1_Data/StreamingAssets/currentLog.txt", "w") as f:
+    # replace the path with where you have your exe file, but keep the rest of the path the same
+        # e.g. "whichever folder you save your exe file" + "/2D go to target v1_Data/StreamingAssets/currentLog.txt"
+    with open("./Builds/" + test_type + "/2D go to target v1_Data/StreamingAssets/currentLog.txt", "w") as f:
         f.write(f"{model_name}.txt")
     time.sleep(1)
 
