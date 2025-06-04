@@ -106,8 +106,12 @@ def train_multiple_networks(networks, env_path, runs_per_network=5):
         )
         print(f"Completed all runs for network: {network}\n")
 
-if __name__ == "__main__":
-    env_path = "./Builds/train-test/2D go to target v1.exe"
+def train_per(env):
+    """
+    Args:
+        env: Type of environment to train on  (e.g., "Perturbation", "Normal", "Random")
+    """
+    env_path = f"./Builds/{env}/2D go to target v1.exe"
     
     # Define your networks here with both built-in and custom encoder types
 

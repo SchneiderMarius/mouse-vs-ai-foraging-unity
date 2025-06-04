@@ -2,6 +2,7 @@ import subprocess
 import os
 import time
 import shutil
+import train_per
 
 def test(model_name, model_file="My Behavior.onnx", test_type="Perturbation", duration=600):
     """
@@ -12,22 +13,26 @@ def test(model_name, model_file="My Behavior.onnx", test_type="Perturbation", du
         duration: Duration of the test in seconds (default: 60)
     """
 
+    destination = f"./Builds/{test_type}/2D go to target v1_Data/StreamingAssets/Models/" 
+    
+    # Create necessary directories if they don't exist
+    os.makedirs(os.path.dirname(destination), exist_ok=True)
+    
+    # Copy the model file
+    shutil.copy("./results/" + model_name + "/" + model_file, destination)
+    time.sleep(1)
+
     # replace the path with where you have your exe file
     exe_path = r"./Builds/" + test_type + "/2D go to target v1.exe"
-    model_file = model_name +"/"+ model_file
-    model_name = model_name + "-test"
-
-    destination = f"./Builds/{test_type}/2D go to target v1_Data/StreamingAssets/" + model_file
-
-    
-    shutil.copy("./results/" + model_file, destination)
-    time.sleep(1)
 
     # write log file's name
     # replace the path with where you have your exe file, but keep the rest of the path the same
         # e.g. "whichever folder you save your exe file" + "/2D go to target v1_Data/StreamingAssets/currentLog.txt"
+
+    # TODO: generate the log file name if there are multiple runs
+
     with open("./Builds/" + test_type + "/2D go to target v1_Data/StreamingAssets/currentLog.txt", "w") as f:
-        f.write(f"{model_name}.txt")
+        f.write(f"{model_name}-test.txt")
     time.sleep(1)
 
     """
