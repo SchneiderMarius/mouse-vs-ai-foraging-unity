@@ -70,7 +70,7 @@ def train_solo(run_id, env_path, config_path, total_runs=5):
             model_name = current_run_id
         )
 
-def train_multiple_networks(networks, env_path, runs_per_network=5):
+def train_multiple_networks(networks, env_path, runs_per_network=2):
     """
     Train multiple visual networks, running each one multiple times.
     
@@ -119,4 +119,4 @@ def train(env, runs_per_network, networks):
     # networks = ["nature_cnn", "simple", "resnet", "neurips"]
     # networks = ["neurips"]
     
-    train_multiple_networks(networks, env_path, runs_per_network=2)
+    train_multiple_networks(networks, env_path, runs_per_network)
