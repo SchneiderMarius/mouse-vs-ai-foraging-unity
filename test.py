@@ -2,7 +2,7 @@ import subprocess
 import os
 import time
 import shutil
-import train_per
+import train
 
 def test(model_name, model_file="My Behavior.onnx", test_type="Perturbation", duration=600):
     """
