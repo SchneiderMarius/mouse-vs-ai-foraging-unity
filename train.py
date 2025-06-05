@@ -1,15 +1,49 @@
 import subprocess
 import os
 import time
+from pathlib import Path
+import glob
+import replace
+import test
 
-def train(run_id, env_path, config_path, total_runs=5):
+def get_next_run_number(base_name, results_dir="./results"):
+    """Get the next run number for a given base name by checking existing results."""
+    # Create results directory if it doesn't exist
+    os.makedirs(results_dir, exist_ok=True)
+    
+    # Get all existing runs for this base name
+    pattern = os.path.join(results_dir, f"{base_name}_*")
+    existing_runs = glob.glob(pattern)
+    
+    if not existing_runs:
+        return 1
+    
+    # Extract run numbers and find the maximum
+    run_numbers = []
+    for run_path in existing_runs:
+        try:
+            # Extract the number after the last underscore
+            run_num = int(run_path.split('_')[-1])
+            run_numbers.append(run_num)
+        except (ValueError, IndexError):
+            continue
+    
+    return max(run_numbers) + 1 if run_numbers else 1
+
+def train_solo(run_id, env_path, config_path, total_runs=5):
+    # Get the next run number for this encoder type
+    next_run = get_next_run_number(run_id)
+    
     for i in range(total_runs):
-        current_run_id = f"{run_id}_{i+1}"
+        current_run_id = f"{run_id}_{next_run + i}"
         print(f"Starting training: {current_run_id}")
-        with open("C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/Grey/2D go to target v1_Data/StreamingAssets/currentLog.txt", "w") as f:
-            f.write(f"{run_id}_{i+1}.txt")
+        
+        # replace the path with where you have your exe file, but keep the rest of the path the same
+        # e.g. "whichever folder you save your exe file" + "/2D go to target v1_Data/StreamingAssets/currentLog.txt"
+        with open("./Builds/train-test/2D go to target v1_Data/StreamingAssets/currentLog.txt", "w") as f:
+            f.write(f"{run_id}_{next_run + i}.txt")
         time.sleep(1)
-
+        
         cmd = [
             "mlagents-learn",
             config_path,
@@ -25,70 +59,64 @@ def train(run_id, env_path, config_path, total_runs=5):
         
         time.sleep(5)
 
-if __name__ == "__main__":
-    env_path = "C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/Grey/2D go to target v1.exe"
-    config_path = "./Config/visualtutor.yaml"
-    run_id = "batch_run_a"
-    total_runs = 3
+        # Call the test function to evaluate the trained model
+        """
+        Args:
+            model_name: Name of the model to be tested (with id)
+            model_file: Path to the ONNX model file
+            test_type: Type of test to run (e.g., "Perturbation"(default), "Normal", "Random")
+        """
+        test.test(
+            model_name = current_run_id
+        )
 
-    train(run_id, env_path, config_path, total_runs)
+def train_multiple_networks(networks, env_path, runs_per_network=5):
+    """
+    Train multiple visual networks, running each one multiple times.
+    
+    Args:
+        networks (list): List of network configurations, each containing:
+            - name: Name of the network
+            - config_path: Path to the network's config file
+            - encoder_type: Type of encoder to use
+        env_path (str): Path to the Unity environment executable
+        base_config_path (str): Base path for config files
+        runs_per_network (int): Number of times to run each network
+    """
 
-# from mlagents_envs.environment import UnityEnvironment
-# from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
-# from mlagents.trainers import learn
-# import os
+    for network in networks:
+        if network == "fully_connected":
+            config_path = "./Config/fc.yaml"
+        elif network == "simple":
+            config_path = "./Config/simple.yaml"
+        elif network == "resnet":
+            config_path = "./Config/resnet.yaml"
+        else:
+            config_path = "./Config/nature.yaml"
+            if network != "nature_cnn":
+                # Replace the path with where your conda environment is located
+                replace.replace_nature_visual_encoder("C:/Users/BionicVisionVR/miniconda3/envs/mouse/Lib/site-packages/mlagents/trainers/torch/encoders.py", "./Encoders/" + network + ".py")
 
-# def main():
-#     env_path = "C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/NoTitle/2D go to target v1.exe"
-#     run_id = "test_run-head"
-#     config_path = "./Config/visual.yaml"
+        print(f"\nStarting training for network: {network}")
+        train_solo(
+            run_id=network,
+            env_path=env_path,
+            config_path=config_path,
+            total_runs=runs_per_network
+        )
+        print(f"Completed all runs for network: {network}\n")
 
-#     engine_channel = EngineConfigurationChannel()
-#     engine_channel.set_configuration_parameters(
-#         width=155, height=86, quality_level=1, time_scale=20, target_frame_rate=-1
-#     )
+def train(env, runs_per_network, networks):
+    """
+    Args:
+        env: Type of environment to train on  (e.g., "Perturbation", "Normal", "Random")
+    """
+    env_path = f"./Builds/{env}/2D go to target v1.exe"
+    
+    # Define your networks here with both built-in and custom encoder types
 
-
-#     env = UnityEnvironment(file_name=env_path, side_channels=[engine_channel])
-
-#     try:
-#         learn.run_training(
-#             run_seed=1,
-#             run_id=run_id,
-#             trainer_config_path=config_path,
-#             env=env,
-#             resume=False,
-#             force=True,
-#         )
-#     finally:
-#         env.close()
-
-# if __name__ == "__main__":
-#     main()
-
-
-# def main():
-
-#     build_path = "C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Builds/NoTitle/2D go to target v1.exe"  # <- change if needed
-#     unity_proc = launch_unity(build_path)
-
-#     time.sleep(10)  # wait for Unity to launch
-
-#     # Connect ML-Agents
-#     channel = EngineConfigurationChannel()
-#     channel.set_configuration_parameters(width=155, height=86, quality_level=1, time_scale=20)
-
-#     env = UnityEnvironment(file_name=None, side_channels=[channel], base_port=5005)
-#     env.reset()
-
-#     # Now start PPO or any trainer (example: PPO)
-#     # You need to have a config.yaml ready
-#     from mlagents.trainers.learn import run_training
-#     run_training(run_options="./Config/visual.yaml")
-
-#     env.close()
-
-#     unity_proc.terminate()
-
-# if __name__ == "__main__":
-#     main()
+    # , "alexnet", "fully_connected", "mousenet", "vonenet"
+    # networks = ["nature_cnn", "simple", "resnet", "neurips"]
+    # networks = ["neurips"]
+    
+    train_multiple_networks(networks, env_path, runs_per_network=2)
