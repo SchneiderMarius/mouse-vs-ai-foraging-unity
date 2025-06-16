@@ -29,11 +29,11 @@ public class cameracontrol : MonoBehaviour
     //renders a quick frame from the camera and returns its mean gray value
     public float getMeanGray()
     {
-
+    
         //temp structures
         frame = new Texture2D(cam.pixelWidth, cam.pixelHeight, TextureFormat.RGB24,false);
         renderframe = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 24);
-
+    
         //tell camera to output a frame to renderframe
         cam.targetTexture = renderframe;
         cam.Render();
@@ -45,12 +45,12 @@ public class cameracontrol : MonoBehaviour
         
         //point camera back toward the screen 
         cam.targetTexture = null;
-
+    
         //get the pixel data from the Texture2D
         frame.Apply();
         //img.texture = frame; //for debugging- assign this to a rawimage to check the texture is good before pixel measurement
         px = frame.GetPixels();
-
+    
         //average the pixels and return it
         float sum = 0;
         for (int i = 0; i < px.Length; i++) //ew
@@ -58,7 +58,7 @@ public class cameracontrol : MonoBehaviour
             float gray = (px[i].r + px[i].g + px[i].b) / 3;
             sum += gray;
         }
-
+    
         return sum / px.Length;
     }
 }

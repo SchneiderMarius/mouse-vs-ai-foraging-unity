@@ -7,12 +7,11 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using Unity.MLAgents.SideChannels;
 using UnityEngine;
 
 public class task_control : MonoBehaviour
 {
-    private GameObject scene;
+    // private GameObject scene;
     private GameObject target;
     private GameObject mouse;
     public GameObject mousecam;
@@ -111,19 +110,34 @@ public class task_control : MonoBehaviour
 
     void Start()
     {
+        Screen.SetResolution(155, 86, false); // false = windowed mode
         // UnityEngine.Random.InitState(12345);
         //get references etc
-        scene = GameObject.Find("Scenemanager");
+        // scene = GameObject.Find("Scenemanager");
         target = GameObject.Find("target");
         mouse = GameObject.Find("Mouse");
         decoys = GameObject.FindGameObjectsWithTag("decoys");
-        logpath = scene.GetComponent<scenes>().logdirectory;
-        phase = scene.GetComponent<scenes>().phase;
-        rewardfreq = scene.GetComponent<scenes>().phase0delay;
-        targetdistance = (float)scene.GetComponent<scenes>().targetdistance;
-        scale_difficulty = scene.GetComponent<scenes>().scale_difficulty;
-        difficulty_increment = (float)scene.GetComponent<scenes>().difficulty_increment;
-        num_decoys = scene.GetComponent<scenes>().num_decoys;
+        
+        // # TODO: logpath, phase, targetdistance, scale_difficulty, difficulty_increment
+        // logpath = scene.GetComponent<scenes>().logdirectory;
+        
+        // logpath = "C:/Users/BionicVisionVR/Documents/Mouse/mouse - test res
+        // /"+ "p2_"+ $"{System.DateTime.Now.ToString("yyyyMMdd_HH:mm")}.txt";
+
+        string basePath = @"./Auto-mouseTest/";
+        string fileName = File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "currentLog.txt"));
+        logpath = Path.Combine(basePath, fileName);
+
+        // logpath = "C:/Users/BionicVisionVR/Documents/Mouse/mouse - test res/"+System.IO.File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "currentLog.txt"));
+        Debug.Log(logpath);
+
+        phase = 2;
+        rewardfreq = 0;
+        targetdistance = 1;
+        scale_difficulty = true;
+        difficulty_increment = (float) 0.05;
+        num_decoys = 1;
+        
         cam = mousecam.GetComponent<Camera>();
         cam_L = mousecam_L.GetComponent<Camera>();
         cam_R = mousecam_R.GetComponent<Camera>();
@@ -135,8 +149,8 @@ public class task_control : MonoBehaviour
         mousebody = mouse.GetComponent<Rigidbody>();
         sun = sunobject.GetComponent<Light>();
         baseline_brightness = sun.intensity;
-        screenrecordpath = scene.GetComponent<scenes>().recordingdirectory;
-        recordtoggle = scene.GetComponent<scenes>().recordtoggle;
+        screenrecordpath = "C:/Users/BionicVisionVR/Documents/Mouse/video";
+        recordtoggle = false;
         AgentController = GameObject.Find("Mouse").GetComponent<AgentController>();
 
         //initialize starting mouse and target positions
@@ -145,7 +159,7 @@ public class task_control : MonoBehaviour
         target_start_pos = new Vector3(targetdistance, 0.5f, 0f); //starting target distance defined by user 
 
         //setup lickport io
-        lickcom = scene.GetComponent<scenes>().rewardcom;
+        // lickcom = scene.GetComponent<scenes>().rewardcom;
         //lickport.BaudRate = 9600;
         //lickport.WriteTimeout = 2000;
         //lickport.ReadTimeout = 2000;
@@ -257,7 +271,8 @@ public class task_control : MonoBehaviour
         }
 
         //initialize stimulus chaos (can be activated during session without issue)
-        int[] chaosnums = { 0, 1, 2, 4, 5, 0, 1, 2, 4, 5 }; //all possible stimulus types. From 0: normal, fog, clutter, contrastmod w/o terrain.
+        // int[] chaosnums = { 0, 1, 2, 4, 5, 0, 1, 2, 4, 5 };
+        int[] chaosnums = { 0, 1, 0, 1 }; //all possible stimulus types. From 0: normal, fog, clutter, contrastmod w/o terrain.
         running_chaos = chaosnums; //uniform sampling of stimuli enforced every 8 trials
         ShuffleArray(running_chaos);
         running_chaos_index = 0;
@@ -293,7 +308,7 @@ public class task_control : MonoBehaviour
         start_blackout = false;
         random_blackouts_activated = false;
         total_blackouts = 0;
-        StartCoroutine(blackoutRandomizer());
+        // StartCoroutine(blackoutRandomizer());
 
         //initialize array of outer terrain objects needed for stimulus chaos mode
         outerterrains = outerterrain.GetComponentsInChildren<Terrain>();
@@ -308,11 +323,11 @@ public class task_control : MonoBehaviour
         framenum += 1;
 
         //start blackout on user command
-        if (start_blackout)
-        {
-            blackout(blackout_duration);
-            start_blackout = false;
-        }
+        // if (start_blackout)
+        // {
+        //     blackout(blackout_duration);
+        //     start_blackout = false;
+        // }
 
         //calculate avg mouse speed (used for timeout management in phases 2+)
         mouse_speeds.Add(mouse.GetComponent<ballmove>().move.magnitude);
@@ -370,11 +385,11 @@ public class task_control : MonoBehaviour
 
     void LateUpdate()
     {
-        if(recordtoggle)
-        {
-            framepath = Path.Combine(screenrecordpath, framenum.ToString() + " " + DateTime.Now.ToString("HH:mm:ss.fff") + ".png");
-            ScreenCapture.CaptureScreenshot(framepath);
-        }
+        // if(recordtoggle)
+        // {
+        //     framepath = Path.Combine(screenrecordpath, framenum.ToString() + " " + DateTime.Now.ToString("HH:mm:ss.fff") + ".png");
+        //     ScreenCapture.CaptureScreenshot(framepath);
+        // }
 
     }
 
@@ -786,19 +801,19 @@ public class task_control : MonoBehaviour
         trials.Add(outcome);
     }
 
-    void blackout(float duration)
-    {
-        
-        //get meangray value from screens
-        float gray_front = mousecam.GetComponent<cameracontrol>().getMeanGray();
-        float gray_left = mousecam_L.GetComponent<cameracontrol>().getMeanGray();
-        float gray_right = mousecam_R.GetComponent<cameracontrol>().getMeanGray();
-        Debug.Log("Blackout for " + duration + " seconds!\nFront: " + gray_front + " Left: " + gray_left + " Right: " + gray_right);
-
-        //start the blackout with timer
-        StartCoroutine(blackout_timer(gray_front, gray_left, gray_right, duration));
-
-    }
+    // void blackout(float duration)
+    // {
+    //     
+    //     //get meangray value from screens
+    //     float gray_front = mousecam.GetComponent<cameracontrol>().getMeanGray();
+    //     float gray_left = mousecam_L.GetComponent<cameracontrol>().getMeanGray();
+    //     float gray_right = mousecam_R.GetComponent<cameracontrol>().getMeanGray();
+    //     Debug.Log("Blackout for " + duration + " seconds!\nFront: " + gray_front + " Left: " + gray_left + " Right: " + gray_right);
+    //
+    //     //start the blackout with timer
+    //     StartCoroutine(blackout_timer(gray_front, gray_left, gray_right, duration));
+    //
+    // }
 
 
     IEnumerator blackout_timer(float front,float left,float right,float duration)
@@ -851,28 +866,28 @@ public class task_control : MonoBehaviour
 
     }
 
-    IEnumerator blackoutRandomizer() //delivers rewards with randomized delays between 0.5 and 1.5*rewardfreq
-    {
-        for (; ; ) //loops forever with period of delay
-        {
-            delay = (blackout_frequency / 2) + (blackout_frequency * UnityEngine.Random.value);
-            
-            if(random_blackouts_activated==true) //if blackouts activated, select one and activate it
-            {
-                if (chaos_blackouts == false) { blackout(blackout_duration); }
-                else
-                {
-                    float draw = UnityEngine.Random.value; //draw random number used as single switch between possibilities
-                    if (draw < blobs_blackout_prob) { StartCoroutine(Blobout(blackout_duration)); } //blob blackout case
-                    else if (draw > (1 - RDK_blackout_prob)) { StartCoroutine(RDKout(blackout_duration)); } //fog blackout case
-                    else { blackout(blackout_duration); } //regular blackout is remainder of probability
-                }
-
-            }
-            yield return new WaitForSeconds(delay); //wait
-        }
-
-    }
+    // IEnumerator blackoutRandomizer() //delivers rewards with randomized delays between 0.5 and 1.5*rewardfreq
+    // {
+    //     for (; ; ) //loops forever with period of delay
+    //     {
+    //         delay = (blackout_frequency / 2) + (blackout_frequency * UnityEngine.Random.value);
+    //         
+    //         if(random_blackouts_activated==true) //if blackouts activated, select one and activate it
+    //         {
+    //             if (chaos_blackouts == false) { blackout(blackout_duration); }
+    //             else
+    //             {
+    //                 float draw = UnityEngine.Random.value; //draw random number used as single switch between possibilities
+    //                 if (draw < blobs_blackout_prob) { StartCoroutine(Blobout(blackout_duration)); } //blob blackout case
+    //                 else if (draw > (1 - RDK_blackout_prob)) { StartCoroutine(RDKout(blackout_duration)); } //fog blackout case
+    //                 else { blackout(blackout_duration); } //regular blackout is remainder of probability
+    //             }
+    //
+    //         }
+    //         yield return new WaitForSeconds(delay); //wait
+    //     }
+    //
+    // }
 
     void ShuffleArray<T>(T[] arr)
     {
@@ -943,34 +958,36 @@ public class task_control : MonoBehaviour
         //turn on stuff for this stimulus
         switch (stimulus)
         {
-            case 0: //normal- do nothing
-                break;
+            // case 0: //normal- do nothing
+            //     break;
             case 1: //activate fog
                 fog.SetActive(true);
                 break;
-            case 2: //activate clutter
-                blobs.SetActive(true);
+            default: //normal- do nothing
                 break;
-            case 3: //contrastmod with terrain
-                mousecam.GetComponent<customcamshader>().enabled = true;
-                mousecam_L.GetComponent<customcamshader>().enabled = true;
-                mousecam_R.GetComponent<customcamshader>().enabled = true;
-                break;
-            case 4: //contrastmod without terrain
-                mousecam.GetComponent<customcamshader>().enabled = true;
-                mousecam_L.GetComponent<customcamshader>().enabled = true;
-                mousecam_R.GetComponent<customcamshader>().enabled = true;
-                
-                StartCoroutine(DeferDisableTerrain());
-                // terrain.GetComponent<Terrain>().enabled = false;
-                // foreach (Terrain thisterrain in outerterrains)
-                // {
-                //     thisterrain.enabled = false;
-                // }
-                break;
-            case 5: //RDK
-                RDKmask.SetActive(true);
-                break;
+            // case 2: //activate clutter
+                //     blobs.SetActive(true);
+                //     break;
+                // case 3: //contrastmod with terrain
+                //     mousecam.GetComponent<customcamshader>().enabled = true;
+                //     mousecam_L.GetComponent<customcamshader>().enabled = true;
+                //     mousecam_R.GetComponent<customcamshader>().enabled = true;
+                //     break;
+                // case 4: //contrastmod without terrain
+                //     mousecam.GetComponent<customcamshader>().enabled = true;
+                //     mousecam_L.GetComponent<customcamshader>().enabled = true;
+                //     mousecam_R.GetComponent<customcamshader>().enabled = true;
+
+                //     StartCoroutine(DeferDisableTerrain());
+                //     // terrain.GetComponent<Terrain>().enabled = false;
+                //     // foreach (Terrain thisterrain in outerterrains)
+                //     // {
+                //     //     thisterrain.enabled = false;
+                //     // }
+                //     break;
+                // case 5: //RDK
+                //     RDKmask.SetActive(true);
+                //     break;
         }
         running_chaos_index++; //increment index in running list
 
@@ -990,7 +1007,7 @@ public class task_control : MonoBehaviour
     {
         Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\te\t");
         log.Close(); //close log fi le when application is ended
-        Destroy(scene);
-        SceneManager.LoadScene("Title");
+        // Destroy(scene);
+        // SceneManager.LoadScene("Title");
     }
 }
