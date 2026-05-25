@@ -56,7 +56,7 @@ The compiled environment build is required for training — see the [competition
   author    = {Schneider, Marius and Canzano, Joe and Hou, Yuchen and Peng, Jing
                and Smith, Spencer LaVere and Beyeler, Michael},
   booktitle = {NeurIPS --- Evaluations \& Datasets Track},
-  year      = {2025},
+  year      = {2026},
   url       = {https://robustforaging.github.io}
 }
 ```
