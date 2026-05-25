@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using System.IO;
 using System.IO.Ports;
@@ -9,8 +9,13 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 
+//new
+using Unity.MLAgents;
+
 public class task_control : MonoBehaviour
 {
+    private StatsRecorder m_Recorder;
+
     // private GameObject scene;
     private GameObject target;
     private GameObject mouse;
@@ -20,11 +25,11 @@ public class task_control : MonoBehaviour
     public GameObject audioobject;
     public GameObject sunobject;
     public AgentController AgentController;
-    
+
     Light sun;
     private float baseline_brightness;
     AudioSource beep;
-    string logpath = "C:/Users/Joe Canzano/Documents/Unity Projects/2D go to target v1/logtests/defaultlog.txt"; //defaults to a test directory; is updated to user input game is run from title scene
+    string logpath = "C:/Users/BionicVisionVR/Documents/Mouse/DefaultLog/defaultlog.txt"; //defaults to a test directory; is updated to user input game is run from title scene
     int phase; //1,2,3 are the same, 4 is 2R, 5 is 3R.
     public int rewardfreq = 0;
     private float delay = 0;
@@ -107,6 +112,27 @@ public class task_control : MonoBehaviour
     public float RDK_blackout_prob; //same for fog. fog + blob + normal blackouts = 1 when chaos blackouts activated.
     public bool lickport_initialized;
     public bool manual_lickport_reset;
+    public float maxTargetDistance = 5;
+    
+    // Max Episodes for inference - Marius 18.06.2025
+    private int maxEpisodes  = 100000;
+    private int episodeCount =  0;
+
+//Marius 18.06.2025 load models for ifnerence only
+    void Awake()
+    {
+        // Parse the --episodes=NNN flag (fallback stays -1 if none provided)
+        foreach (var arg in Environment.GetCommandLineArgs())
+        {
+            if (arg.StartsWith("--episodes=") &&
+                int.TryParse(arg.Substring("--episodes=".Length), out var v))
+            {
+                maxEpisodes = v;
+                break;
+            }
+        }
+        Debug.Log($"[task_control] maxEpisodes = {maxEpisodes}");
+    }
 
     void Start()
     {
@@ -117,27 +143,37 @@ public class task_control : MonoBehaviour
         target = GameObject.Find("target");
         mouse = GameObject.Find("Mouse");
         decoys = GameObject.FindGameObjectsWithTag("decoys");
-        
+
         // # TODO: logpath, phase, targetdistance, scale_difficulty, difficulty_increment
         // logpath = scene.GetComponent<scenes>().logdirectory;
+        // m_Recorder = Academy.Instance.StatsRecorder;
         
         // logpath = "C:/Users/BionicVisionVR/Documents/Mouse/mouse - test res
         // /"+ "p2_"+ $"{System.DateTime.Now.ToString("yyyyMMdd_HH:mm")}.txt";
 
-        string basePath = @"./Auto-mouseTest/";
+        string basePath = @"./logfiles/"; // "C:/Users/BionicVisionVR/Documents/Mouse/2D go to target v1/Auto-mouseTest";//
         string fileName = File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "currentLog.txt"));
         logpath = Path.Combine(basePath, fileName);
+
+        // Marius 24.06.2025
+        if (!Directory.Exists(basePath))
+        {
+            Debug.Log($"[task_control] Log directory not found – creating: {basePath}");
+            Directory.CreateDirectory(basePath);
+        }
 
         // logpath = "C:/Users/BionicVisionVR/Documents/Mouse/mouse - test res/"+System.IO.File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "currentLog.txt"));
         Debug.Log(logpath);
 
         phase = 2;
         rewardfreq = 0;
-        targetdistance = 1;
-        scale_difficulty = true;
-        difficulty_increment = (float) 0.05;
+        // targetdistance = 1;//5
+        targetdistance = 5;
+        // scale_difficulty = true; //False;
+        scale_difficulty = false; 
+        difficulty_increment = (float)0.05;
         num_decoys = 1;
-        
+
         cam = mousecam.GetComponent<Camera>();
         cam_L = mousecam_L.GetComponent<Camera>();
         cam_R = mousecam_R.GetComponent<Camera>();
@@ -203,6 +239,7 @@ public class task_control : MonoBehaviour
         //phase 1 spawns target in fixed position requiring no change here
         if (phase == 1)
         {
+            maxTargetDistance = 5;
             timeout_duration = 5;
             reward_amt = 1;
             destroydecoys();
@@ -211,6 +248,7 @@ public class task_control : MonoBehaviour
         //phase 2 adds random position offset to target in z direction 
         if (phase == 2)
         {
+            maxTargetDistance = 5;
             timeout_duration = 5;
             reward_amt = 1;
             destroydecoys();
@@ -219,6 +257,7 @@ public class task_control : MonoBehaviour
         //phase 3 spawns target on a circle of radius target_start_pos.x around the spawn point
         if (phase == 3)
         {
+            maxTargetDistance = 5;
             reward_amt = 3;
             timeout_duration = 60;
             running_rotation_index = 0;
@@ -230,6 +269,7 @@ public class task_control : MonoBehaviour
         //phase 4 here is phase 2R. Similar to phase 2, but there's only three potential target positions (L/M/R) and there's decoys now.
         if (phase == 4)
         {
+            maxTargetDistance = 5;
             timeout_duration = 20;
             reward_amt = 3;
 
@@ -254,6 +294,7 @@ public class task_control : MonoBehaviour
         //phase 5 here is phase 3R. Phase 3, but there's decoys now.
         if (phase == 5)
         {
+            maxTargetDistance = 5;
             timeout_duration = 60;
             reward_amt = 3;
             running_rotation_index = 0;
@@ -271,8 +312,16 @@ public class task_control : MonoBehaviour
         }
 
         //initialize stimulus chaos (can be activated during session without issue)
-        // int[] chaosnums = { 0, 1, 2, 4, 5, 0, 1, 2, 4, 5 };
-        int[] chaosnums = { 0, 1, 0, 1 }; //all possible stimulus types. From 0: normal, fog, clutter, contrastmod w/o terrain.
+        int[] chaosnums = { 0, 1, 2, 4, 5, 0, 1, 2, 4, 5 };  // all
+        // int[] chaosnums = { 1, 1, 1, 1 }; // fog
+        // int[] chaosnums = { 2, 2, 2, 2 }; // clutter
+        // int[] chaosnums = { 4, 4, 4, 4 }; //  contrastmod
+        // int[] chaosnums = { 5, 5, 5, 5 }; // rdk
+        // int[] chaosnums = { 0, 0, 0, 0, }; // normal
+        // int[] chaosnums = { 0, 4, 0, 4, 0, 4, 0, 4, }; 
+
+
+
         running_chaos = chaosnums; //uniform sampling of stimuli enforced every 8 trials
         ShuffleArray(running_chaos);
         running_chaos_index = 0;
@@ -353,14 +402,18 @@ public class task_control : MonoBehaviour
             //timeout if timeout was reached
             if (Time.timeSinceLevelLoad > timeout_time)
             {
+                Debug.Log("Timeout reached at " + Time.timeSinceLevelLoad + " seconds");
                 if (newtrial_requires_stop == false)
                 {
+                    Debug.Log("Timeout without stop requirement, ending episode");
                     // AgentController.SetReward(-5f);
                     AgentController.EndEpisode();
                     timeout();
                 }
                 else if (mouse_avg_speed < 0.1)
                 {
+                    Debug.Log("Timeout with stop requirement, mouse stopped, ending episode");
+                    Debug.Log("Timeout speed " + mouse_avg_speed + " seconds");
                     // AgentController.SetReward(-5f);
                     AgentController.EndEpisode();
                     timeout();
@@ -372,10 +425,10 @@ public class task_control : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R)) //manual reward delivery
         {
             Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tu\t");
-            deliver_reward(manual:true);
+            deliver_reward(manual: true);
         }
 
-        if(manual_lickport_reset)
+        if (manual_lickport_reset)
         {
             manual_lickport_reset = false;
             //reset_lickport();
@@ -404,7 +457,7 @@ public class task_control : MonoBehaviour
             deliver_reward();
         }
         else  //if target was reached after a decoy the trial still counts as unsuccessful 
-        { 
+        {
             trialoutcome(0);
             if (reward_all_hits == true) { deliver_reward(); } //rewarding this anyway is optional
         }
@@ -416,9 +469,9 @@ public class task_control : MonoBehaviour
     {
         Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tf\t" + trial_index.ToString());
         trialoutcome(0);
-        if(phase > 0)
+        if (phase > 0)
             beep.Play();
-        newtrial(); 
+        newtrial();
     }
 
     public void miss(string decoy)
@@ -436,6 +489,15 @@ public class task_control : MonoBehaviour
     {
         trial_index++;
 
+        // abort after defined number of episodes (06.16.2025 Marius)
+        if (maxEpisodes > 0 && trial_index > maxEpisodes)
+        {
+            Debug.Log($"[task_control] Reached {episodeCount}/{maxEpisodes} episodes → quitting");
+            Application.Quit(0);
+            return;
+        }
+
+
         //timeout timer math
         trial_starttime = Time.timeSinceLevelLoad;
         timeout_time = trial_starttime + timeout_duration; //this is time when timeout will occur - scaled realtime in update()
@@ -449,13 +511,30 @@ public class task_control : MonoBehaviour
             scale_difficulty = false;
             target_start_pos.x = 5;
         }
-        
+
         running_performance = trial_history.Average(); //running performance is average across last n trials (set by trial_history length)
         if (running_performance >= difficulty_threshold && scale_difficulty) //distance scaling - increase distance to target if performance reaches threshold.
         {
             target_start_pos.x += difficulty_increment;
             Array.Clear(trial_history, 0, trial_history.Length); //clear array to only consider performance at current difficulty
         }
+
+// Marius
+        // float relativeDistance = target_start_pos.x / maxTargetDistance;
+
+        // // log the rolling success rate (average of last N outcomes)
+        // m_Recorder.Add("SuccessRate_LastN", (float)running_performance);
+        // // log the current target distance
+        // m_Recorder.Add("TargetDistance", relativeDistance);
+        // // only every 50 trials, print relative target distance
+
+        // if (trial_index % 10 == 0)
+        // {
+        //     // compute relative distance in [0,1]
+        //     Debug.Log($"[Trial {trial_index}] SuccessRate={running_performance:F2}, " +
+        //               $"RelTargetDist={relativeDistance:P0}");
+        // }
+
 
         //overall performance (for display only)
         if (trials.Count() > 0)
@@ -649,7 +728,7 @@ public class task_control : MonoBehaviour
 
         //chaos trial mode automation
         int stimulus = 0;
-        if(stimulus_chaos == true)
+        if (stimulus_chaos == true)
         {
             stimulus = Flip_Chaos();
         }
@@ -663,16 +742,16 @@ public class task_control : MonoBehaviour
 
         //log target and decoy positions
         Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\tt\t" + target.transform.position.x.ToString() + "\t" + target.transform.position.y.ToString() + "\t" + target.transform.position.z.ToString() + "\t" + target_y_running_rotations[target_rotation_index].ToString() + "\t" + target_z_running_rotations[target_rotation_index].ToString());
-        foreach(GameObject decoy in activedecoys)
-            Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\td\t" + decoy.transform.position.x.ToString() + "\t" + decoy.transform.position.y.ToString() + "\t" + decoy.transform.position.z.ToString() + "\t" + decoy.name.ToString().Substring(5,1));
+        foreach (GameObject decoy in activedecoys)
+            Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\td\t" + decoy.transform.position.x.ToString() + "\t" + decoy.transform.position.y.ToString() + "\t" + decoy.transform.position.z.ToString() + "\t" + decoy.name.ToString().Substring(5, 1));
 
         //log stimulus type as well
         Write_log(DateTime.Now.ToString("HH:mm:ss.fff") + "\ts\t" + stimulus.ToString()); //changed to 's' 5/17/24
-        // Debug.Log(stimulus.ToString());
-        //output new trial trigger
-        
+                                                                                          // Debug.Log(stimulus.ToString());
+                                                                                          //output new trial trigger
+
         //trialTrigger();
-    
+
     }
 
     void Write_log(string message)
@@ -683,7 +762,7 @@ public class task_control : MonoBehaviour
 
     IEnumerator rewardRandomizer() //delivers rewards with randomized delays between 0.5 and 1.5*rewardfreq
     {
-        for(; ;) //loops forever with period of delay
+        for (; ; ) //loops forever with period of delay
         {
             delay = (rewardfreq / 2) + (rewardfreq * UnityEngine.Random.value);
             deliver_reward();
@@ -765,27 +844,31 @@ public class task_control : MonoBehaviour
             //lickport.Write(reward_delivered.ToString());
             //lickport_initialized = true;
         }
-        catch (TimeoutException) { 
+        catch (TimeoutException)
+        {
             Debug.Log("Reward delivery failed!");
             //reset_lickport();
         }
-        catch (InvalidOperationException) { 
+        catch (InvalidOperationException)
+        {
             Debug.Log("COM port not open! Reward delivery failed!");
             //reset_lickport();
         }
 
         //send bias bonus- this clicks the relay twice to make it extra apparent to the animal
         if (include_bonus == true)
-        {   
+        {
             try
             {
                 //lickport.Write(bias_bonus.ToString());
                 reward_delivered += bias_bonus; //add to the reward delivered total
             }
-            catch (TimeoutException) { 
+            catch (TimeoutException)
+            {
                 Debug.Log("Reward delivery failed!");
             }
-            catch (InvalidOperationException) { 
+            catch (InvalidOperationException)
+            {
                 Debug.Log("COM port not open! Reward delivery failed!");
             }
         }
@@ -816,9 +899,9 @@ public class task_control : MonoBehaviour
     // }
 
 
-    IEnumerator blackout_timer(float front,float left,float right,float duration)
+    IEnumerator blackout_timer(float front, float left, float right, float duration)
     {
-        
+
         //activate gray image on each screen with proper value (game starts with them transparent)
         blackout_img.color = new Color(front, front, front, 1f);
         blackout_img_L.color = new Color(left, left, left, 1f);
@@ -893,7 +976,7 @@ public class task_control : MonoBehaviour
     {
         for (int i = arr.Length - 1; i > 0; i--)
         {
-            int r = UnityEngine.Random.Range(0, i+1);
+            int r = UnityEngine.Random.Range(0, i + 1);
             T tmp = arr[i];
             arr[i] = arr[r];
             arr[r] = tmp;
@@ -940,7 +1023,7 @@ public class task_control : MonoBehaviour
 
         //--------activate stimuli based on list position
         int stimulus = running_chaos[running_chaos_index]; //get current stimulus
-        
+
         mousecam.GetComponent<customcamshader>().enabled = false; //deactivate everything
         mousecam_L.GetComponent<customcamshader>().enabled = false; //deactivate everything
         mousecam_R.GetComponent<customcamshader>().enabled = false; //deactivate everything
@@ -958,36 +1041,35 @@ public class task_control : MonoBehaviour
         //turn on stuff for this stimulus
         switch (stimulus)
         {
-            // case 0: //normal- do nothing
-            //     break;
+            case 0: //normal- do nothing
+                break;
             case 1: //activate fog
                 fog.SetActive(true);
                 break;
-            default: //normal- do nothing
+            // default: //normal- do nothing
+            //     break;
+            case 2: //activate clutter
+                blobs.SetActive(true);
                 break;
-            // case 2: //activate clutter
-                //     blobs.SetActive(true);
-                //     break;
-                // case 3: //contrastmod with terrain
-                //     mousecam.GetComponent<customcamshader>().enabled = true;
-                //     mousecam_L.GetComponent<customcamshader>().enabled = true;
-                //     mousecam_R.GetComponent<customcamshader>().enabled = true;
-                //     break;
-                // case 4: //contrastmod without terrain
-                //     mousecam.GetComponent<customcamshader>().enabled = true;
-                //     mousecam_L.GetComponent<customcamshader>().enabled = true;
-                //     mousecam_R.GetComponent<customcamshader>().enabled = true;
-
-                //     StartCoroutine(DeferDisableTerrain());
-                //     // terrain.GetComponent<Terrain>().enabled = false;
-                //     // foreach (Terrain thisterrain in outerterrains)
-                //     // {
-                //     //     thisterrain.enabled = false;
-                //     // }
-                //     break;
-                // case 5: //RDK
-                //     RDKmask.SetActive(true);
-                //     break;
+            // case 3: //contrastmod with terrain
+            //     mousecam.GetComponent<customcamshader>().enabled = true;
+            //     mousecam_L.GetComponent<customcamshader>().enabled = true;
+            //     mousecam_R.GetComponent<customcamshader>().enabled = true;
+            //     break;
+            case 4: //contrastmod without terrain
+                mousecam.GetComponent<customcamshader>().enabled = true;
+                mousecam_L.GetComponent<customcamshader>().enabled = true;
+                mousecam_R.GetComponent<customcamshader>().enabled = true;
+                StartCoroutine(DeferDisableTerrain());
+                    // terrain.GetComponent<Terrain>().enabled = false;
+                    // foreach (Terrain thisterrain in outerterrains)
+                    // {
+                    //     thisterrain.enabled = false;
+                    // }
+                break;
+            case 5: //RDK
+                RDKmask.SetActive(true);
+                break;
         }
         running_chaos_index++; //increment index in running list
 
@@ -1000,7 +1082,7 @@ public class task_control : MonoBehaviour
         GameObject[] decoys = GameObject.FindGameObjectsWithTag("decoys");
         foreach (GameObject decoy in decoys)
             GameObject.Destroy(decoy);
-            // Debug.Log("Found object: " + decoy.name);
+        // Debug.Log("Found object: " + decoy.name);
     }
 
     void Restart()

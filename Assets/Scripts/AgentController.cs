@@ -22,15 +22,10 @@ public class AgentController : Agent
     int phase;
     
     public float yangle;
-    // public float gain = 0.05f;
-    
+        
     [SerializeField] public float gain = 1.5f;
     
     [SerializeField] public float rotationgain = 10f;
-    
-    // public float gain = 15;
-    public float mouseSensitivity = 100.0f;
-    public float clampAngle = 80.0f;
     
     private float rotY = 0.0f; // rotation around the up/y axis
     private float rotX = 0.0f; // rotation around the right/x axis
@@ -43,7 +38,7 @@ public class AgentController : Agent
 
     [SerializeField] private GameObject target;
 
-    [SerializeField] private float moveSpeed = 4f;
+    // [SerializeField] private float moveSpeed = 4f;
 
     EnvironmentParameters m_ResetParams;
 
@@ -69,7 +64,7 @@ public class AgentController : Agent
     //     
     // }
 
-    
+
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
         float moveX = actionBuffers.ContinuousActions[0]; // Movement along the X axis (left/right)
@@ -82,7 +77,7 @@ public class AgentController : Agent
         moveX = moveX * gain * Time.deltaTime;
         moveZ = moveZ * gain * Time.deltaTime;
 
-        Vector3 move = new Vector3(moveX, 0.0f, moveZ) ;
+        Vector3 move = new Vector3(moveX, 0.0f, moveZ);
         float yangle = rotationY * rotationgain * Time.deltaTime; // Scale rotation according to rotation gain
 
         // Apply the movement and rotation
@@ -91,6 +86,8 @@ public class AgentController : Agent
 
         // penalty for each action (including moving and rotation)
         SetReward(-1f);
+
+        //RequestDecision();
         // float thr
         // eshold = 0.0001f;
         // if (Mathf.Abs(moveX) > threshold || Mathf.Abs(moveZ) > threshold)

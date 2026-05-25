@@ -79,3 +79,18 @@ StreamingAssets/*
 
 # Include Project Settings
 !ProjectSettings/
+
+/results
+
+# Project-specific generated/local dirs
+logfiles/
+non/
+Config/
+2D go to target v1_BurstDebugInformation_DoNotShip/
+
+# Large binary / archive files
+*.rar
+SLABscreenrecorder.bat
+
+# Manifest copies
+manifest\ -\ Copy.json
