@@ -52,7 +52,8 @@ The compiled environment build is required for training — see the [competition
 
 ```bibtex
 @inproceedings{schneider2025mousevsai,
-  title     = {Mouse vs.\ {AI}: A Benchmark for Visual Robustness and Neural Alignment},
+  title     = {Visual Robustness and Neural Alignment in a Shared
+Foraging Task: The Mouse vs. AI Benchmark},
   author    = {Schneider, Marius and Canzano, Joe and Hou, Yuchen and Peng, Jing
                and Smith, Spencer LaVere and Beyeler, Michael},
   booktitle = {NeurIPS --- Evaluations \& Datasets Track},
